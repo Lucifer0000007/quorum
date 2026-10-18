@@ -11,6 +11,9 @@ extend-exclude = ["data"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
 
+[tool.ruff.lint.per-file-ignores]
+"scripts/render_status.py" = ["E501"]  # long prose sentences for docs/STATUS.md
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["integration: needs a live FalkorDB with the ingested graph"]
