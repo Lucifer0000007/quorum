@@ -3,8 +3,8 @@
 **Graph Hacks · FalkorDB · Track 03: Company Brain**
 
 Quorum is a pre-flight check for engineering decisions. Before you replace an old decision, it tells you
-what else rests on it, which teams have to agree, and who actually knows the area. Every answer shows the
-graph path, the exact Cypher that ran, and a link to the source.
+what else is linked to it (reachable via see-also and replaces), which teams own those decisions, and who actually
+knows the area. Every answer shows the graph path, the exact Cypher that ran, and a link to the source.
 
 The "company" is the public Kubernetes project:
 
@@ -265,31 +265,42 @@ recent and `1` otherwise. Scope is the KEP plus its 2-hop neighborhood, or a SIG
   `make ingest` leaves every count and property unchanged, which an integration test checks. `--rebuild` drops
   and reloads the graph when the upstream data changes.
 
-## Setup
+## Setup (Linux and macOS)
 
-Requirements: Docker, Python 3.11+, git, make.
+**Requirements.** Docker Engine or Docker Desktop with the Compose v2 plugin (`docker compose version` must work; we
+tested Docker 26 with Compose 2.26), Python 3.11 or newer with `venv` (we tested 3.12 and 3.13; on Debian or Ubuntu
+install it with `sudo apt install python3-venv`), git and GNU make. FalkorDB and the app together need roughly 1 GB of
+free memory and a few hundred MB of disk.
 
 ```bash
 git clone https://github.com/Lucifer0000007/quorum && cd quorum
-make venv          # python3 -m venv .venv && pip install -r requirements.txt
-make up            # FalkorDB v4.22.1 on :6379 (Browser on :3000), waits for PING
-make clone-data    # kubernetes/enhancements at the pinned commit (CORPUS_COMMIT) into data/enhancements
-make ingest        # parse + idempotent MERGE into "company_brain" (about 2 s)
-make run           # http://127.0.0.1:8000
+docker compose up -d --wait falkordb   # FalkorDB v4.22.1 on 127.0.0.1:6379 (Browser on :3000); returns once healthy
+make venv                              # creates .venv and installs requirements.txt
+make clone-data                        # kubernetes/enhancements at the pinned commit (CORPUS_COMMIT) into data/enhancements
+make ingest                            # parse + idempotent MERGE into the graph "company_brain" (about 2 seconds)
+make run                               # serves http://127.0.0.1:8000: leave it running and open that URL
 ```
 
-The corpus is pinned to one upstream commit (the file `CORPUS_COMMIT`), so everyone gets the same data, the same data
-hash and the same numbers as this README, and the tests that name specific KEPs stay valid. For the latest upstream
-data use `make clone-data CORPUS_COMMIT=master` (the app and `make eval` work on any commit, but those tests and the
-README figures may then differ). We verified this setup from a fresh clone of the public repo: `make clone-data`,
-`make ingest` twice (same hash both times and the same hash as our working copy), `make check`, `make test`,
-`make lint` and `make eval`.
+(`--wait` needs Compose 2.1 or newer. `make up` does the same and also waits for PING.) In a second terminal, from the
+same directory:
 
-Checks: `make test` (unit and live-graph integration tests), `make lint` (ruff and the Cypher lint),
-`make check` (graph ready, labels and edges present), `make eval`, `make report` (writes `data/report.json`),
-`make verdicts` (bailiff over every KEP, writes `data/verdicts.json`), `make readme` (regenerates the numbers and
-Cypher in this file), and `make ui-smoke` (a real-browser click-through of the demo flow; one-time setup:
-`pip install -r requirements-dev.txt && playwright install chromium`).
+```bash
+make check      # the graph is ready, its labels and edges exist, the Cypher lint passes
+make test       # unit tests, and integration tests against the live graph
+make eval       # regenerates both gold sets from the YAML, compares both systems, rewrites evals/results.json
+make dev-deps   # once: Playwright and Chromium (on Linux this also installs system libraries, so it needs root)
+make ui-smoke   # real-browser click-through of the demo flow on a throwaway server and graph
+```
+
+`make check` prints the data hash. It should equal the data hash in "The data, in numbers" below, because the corpus is
+pinned to one upstream commit (the file `CORPUS_COMMIT`): everyone gets the same data, the same numbers as this README,
+and the tests that name specific KEPs stay valid. For the latest upstream data use
+`make clone-data CORPUS_COMMIT=master` (the app and `make eval` work on any commit, but those tests and the README
+figures may then differ).
+
+Other targets: `make lint` (ruff and the Cypher lint), `make report` (writes `data/report.json`), `make verdicts`
+(bailiff over every KEP, writes `data/verdict_report.json`), `make readme` (regenerates the numbers and Cypher in this
+file), `make status` (regenerates `docs/STATUS.md`), `make down` (stops FalkorDB; the data stays in a Docker volume).
 
 The test suite and `make ui-smoke` run against throwaway episodic graphs (`agent_episodic_memory_test`,
 `agent_episodic_memory_uismoke`), selected with `QUORUM_EPISODIC_GRAPH` (`QUORUM_BRAIN_GRAPH` does the same for the
@@ -297,14 +308,16 @@ main graph), so they never write to the demo's real episodic memory.
 
 Optional: an LLM for tool selection, see "Language model (optional)" below. Nothing else needs a key.
 
-To run the app in Docker too: `make up && make clone-data`, then
+To run the app in Docker too: `docker compose up -d --wait falkordb && make clone-data`, then
 `docker compose --profile app run --rm app python -m ingest.load` and `docker compose --profile app up -d`.
 
-**Windows without Docker Desktop** (how we built it): Docker Engine runs inside WSL2 Debian, with
+### Windows (optional helper)
+
+This is how we built it, on a Windows machine without Docker Desktop: Docker Engine runs inside WSL2 Debian, with
 `DOCKER := wsl -d Debian -u root -- docker` in a git-ignored `local.mk`, and `make venv PYTHON=python` creates the
-virtualenv. WSL stops idle distros and takes Docker with them, so
-`powershell -ExecutionPolicy Bypass -File scripts\dev_up.ps1` keeps WSL alive, starts FalkorDB, ingests if the graph
-is missing or not ready, and serves the app (leave that window open).
+virtualenv. WSL stops idle distros and takes Docker with them, so the optional helper
+`powershell -ExecutionPolicy Bypass -File scripts\dev_up.ps1` keeps WSL alive, starts FalkorDB, ingests if the graph is
+missing or not ready, and serves the app (leave that window open). `docs/STATUS.md` lists its steps.
 
 **There is no live deployment;** this section is the complete local setup.
 
@@ -620,8 +633,10 @@ the running log and the assumptions it stated instead of asking.
 ```
 ingest/   config.py, parse.py (pure), load.py (MERGE)       agent/  guard, templates, db, queries, bailiff,
 ui/       index.html, app.js, style.css (no build)                  router, llm, episodic, api
-scripts/  data_report, check_graph, lint_cypher, verdict_distribution, render_readme, wait_falkordb
+scripts/  data_report, check_graph, lint_cypher, verdict_report, llm_smoke, ui_smoke, render_readme, render_status,
+          wait_falkordb, dev_up.ps1 (optional Windows helper)
 evals/    multihop/ and lookups/ (make_gold.py + gold.json each), yamlcorpus.py, baseline.py, run_eval.py,
           results.json, llm_smoke.json
+docs/     STATUS.md (generated: what ran, with the command that reproduces each number)
 tests/    real kep.yaml fixtures; unit + live-graph integration tests
 ```

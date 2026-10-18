@@ -9,7 +9,7 @@ DOCKER ?= docker
 # Machine-local overrides (gitignored), e.g. DOCKER := wsl -d Debian -u root -- docker
 -include local.mk
 
-.PHONY: venv up down ping clone-data report ingest verdicts readme status test test-fast ui-smoke lint run eval check
+.PHONY: venv up down ping clone-data report ingest verdicts readme status test test-fast dev-deps ui-smoke lint run eval check
 
 # On Windows the `python3` name is often a Store stub: make venv PYTHON=python
 venv:
@@ -51,7 +51,12 @@ test:
 test-fast:
 	$(PY) -m pytest -m "not integration" -x
 
-# Browser click-through on a throwaway server and graph. One-time: pip install -r requirements-dev.txt && playwright install chromium
+# One-time setup for ui-smoke: Playwright plus Chromium (--with-deps also installs system libraries on Linux: needs root)
+dev-deps:
+	$(PY) -m pip install -q -r requirements-dev.txt
+	$(PY) -m playwright install --with-deps chromium
+
+# Browser click-through on a throwaway server and graph (run `make dev-deps` once first)
 ui-smoke:
 	$(PY) -m scripts.ui_smoke
 

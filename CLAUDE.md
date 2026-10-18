@@ -40,7 +40,12 @@ Graph `agent_episodic_memory` (written only by the approval gate):
 ## Layout & commands
 - `ingest/` config, parse (pure), load (MERGE). `agent/` guard, templates, db, queries, bailiff, router, llm,
   episodic (the only write path), api. `ui/` static SPA. `scripts/`, `evals/`, `tests/` (real kep.yaml fixtures).
-- `make up | clone-data | ingest | test | test-fast | lint | run | eval | check | report | verdicts | readme | ui-smoke`
+- `make up | clone-data | ingest | test | test-fast | lint | run | eval | check | report | verdicts | readme | status | ui-smoke`
+- Optional LLM: any OpenAI-compatible API, configured only by `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` in `.env`
+  (gitignored). Never print, log, hardcode or commit the key (`agent/llm.py` scrubs it; `tests/test_no_secrets.py`
+  guards the repo). The LLM is used only after `python -m scripts.llm_smoke` passed for that exact provider and model
+  (`evals/llm_smoke.json`); otherwise the app runs Keywords only and the UI says why. Tests cannot see the real key.
+- Wording: a see-also link means "references"/"reachable via see-also/replaces", never "depends on".
 - Local machine: FalkorDB runs in Docker inside WSL Debian (`local.mk` sets `DOCKER`); `scripts/dev_up.ps1` starts
   everything (WSL idles out and takes Docker with it, so it keeps one session alive).
 - Python venv: `.venv` (Python 3.12). Tests marked `integration` need the live graph.
