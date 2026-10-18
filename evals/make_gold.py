@@ -25,7 +25,9 @@ DEFAULT_ENHANCEMENTS = REPO_ROOT / "data" / "enhancements"
 DEFAULT_OUT = Path(__file__).resolve().parent / "gold.json"
 
 SEED = 42
-TOTAL_QUESTIONS = 28
+BASE_QUESTIONS = 28  # the five original kinds
+HARD_KIND_COUNT = 5  # blast_radius_count and approvers each
+BLAST_MIN, BLAST_MAX = 1, 60
 SUCCESSOR_TRUE_MAX = 4  # has_successor kind: at most 4 true + 4 false (8 total)
 SUCCESSOR_TRUE_MIN = 3
 MIN_SIG_KEPS = 5
@@ -112,15 +114,21 @@ def load_keps(enhancements_dir: Path) -> list[Kep]:
     return keps
 
 
+def node_id(kep: Kep) -> str:
+    """Graph node id: the canonical number for valid KEPs, else "<sig-dir>/<folder>" (as the app does)."""
+    return kep.kep_id or f"{kep.sig_dir}/{kep.folder}"
+
+
 def _resolver(keps: list[Kep]):
+    """Return resolve(ref) -> node id (canonical number, or "<sig-dir>/<folder>" for KEPs without one)."""
     valid_ids = {k.kep_id for k in keps if k.kep_id}
     folder_to_id: dict[str, str | None] = {}
     for kep in keps:
         # A folder name seen on more than one KEP is ambiguous; it only resolves if all agree.
-        if kep.folder in folder_to_id and folder_to_id[kep.folder] != kep.kep_id:
+        if kep.folder in folder_to_id and folder_to_id[kep.folder] != node_id(kep):
             folder_to_id[kep.folder] = None
         else:
-            folder_to_id.setdefault(kep.folder, kep.kep_id)
+            folder_to_id.setdefault(kep.folder, node_id(kep))
 
     def resolve(ref: str) -> str | None:
         m = _REF_RE.search(ref)
@@ -142,13 +150,65 @@ def _resolver(keps: list[Kep]):
 def resolve_refs(keps: list[Kep], field_name: str) -> dict[str, set[str]]:
     """Map each valid KEP id to the set of valid KEP ids its `field_name` resolves to (self references dropped)."""
     resolve = _resolver(keps)
+    valid_ids = {k.kep_id for k in keps if k.kep_id}
     out: dict[str, set[str]] = {}
     for kep in keps:
         if not kep.kep_id:
             continue
-        targets = {t for t in (resolve(r) for r in kep.refs.get(field_name, [])) if t and t != kep.kep_id}
-        out[kep.kep_id] = targets
+        resolved = (resolve(r) for r in kep.refs.get(field_name, []))
+        out[kep.kep_id] = {t for t in resolved if t in valid_ids and t != kep.kep_id}
     return out
+
+
+def kep_graph(keps: list[Kep]) -> dict[str, set[str]]:
+    """Undirected adjacency over ALL KEPs (node ids per `node_id`). Edges: see-also and replaces (src -> target),
+    superseded-by (target -> src). Direction is irrelevant once undirected; self references are dropped."""
+    resolve = _resolver(keps)
+    adj: dict[str, set[str]] = {node_id(k): set() for k in keps}
+    for kep in keps:
+        src = node_id(kep)
+        for field_name in ("see-also", "replaces", "superseded-by"):
+            for ref in kep.refs.get(field_name, []):
+                tgt = resolve(ref)
+                if tgt and tgt != src:
+                    adj[src].add(tgt)
+                    adj[tgt].add(src)
+    return adj
+
+
+def blast_radius_count(adj: dict[str, set[str]], start: str, max_hops: int = 3) -> int:
+    """Number of other nodes reachable from `start` within `max_hops` hops (BFS)."""
+    seen = {start}
+    frontier = {start}
+    for _ in range(max_hops):
+        frontier = {n for f in frontier for n in adj.get(f, ()) if n not in seen}
+        if not frontier:
+            break
+        seen |= frontier
+    return len(seen) - 1
+
+
+_HANDLE_RE = re.compile(r"@([A-Za-z0-9][A-Za-z0-9_./-]*)")
+_TEAM_RE = re.compile(r"^(sig|wg|committee)-|-(leads|tech-leads|approvers|reviewers|maintainers)$")
+_SKIP_HANDLES = {"", "tbd", "n/a", "none"}
+
+
+def approver_handles(kep: Kep) -> list[str]:
+    """Sorted, deduplicated, lowercased approver handles, excluding placeholders and team aliases."""
+    handles: set[str] = set()
+    for entry in _as_list(kep.data.get("approvers")):
+        entry = entry.strip()
+        m = _HANDLE_RE.search(entry)
+        if m:
+            token = m.group(1)
+        else:
+            parts = entry.split()
+            token = parts[0] if parts else ""
+        handle = token.strip("\"',;:().").lower()
+        if handle in _SKIP_HANDLES or _TEAM_RE.search(handle):
+            continue
+        handles.add(handle)
+    return sorted(handles)
 
 
 def successor_ids(keps: list[Kep]) -> set[str]:
@@ -198,7 +258,7 @@ def build_gold(enhancements_dir: Path) -> dict:
     succ_qs = [(i, True) for i in trues] + [(i, False) for i in falses]
     rng.shuffle(succ_qs)
 
-    remaining = TOTAL_QUESTIONS - len(succ_qs)
+    remaining = BASE_QUESTIONS - len(succ_qs)
     per_kind = [remaining // 4 + (1 if i < remaining % 4 else 0) for i in range(4)]
 
     # owning_sig
@@ -257,6 +317,42 @@ def build_gold(enhancements_dir: Path) -> dict:
                 "question": f"How many KEPs does {sig} own?",
                 "params": {"sig": sig},
                 "gold": counts[sig],
+            }
+        )
+
+    # blast_radius_count: split the distinct radius sizes in [BLAST_MIN, BLAST_MAX] into contiguous bands and
+    # pick one KEP per band, so the sample spans small and large radii.
+    adj = kep_graph(keps)
+    radius = {k.kep_id: blast_radius_count(adj, k.kep_id) for k in valid}
+    eligible = {kid: n for kid, n in radius.items() if BLAST_MIN <= n <= BLAST_MAX}
+    sizes = sorted(set(eligible.values()))
+    if len(sizes) < HARD_KIND_COUNT:
+        raise RuntimeError(f"only {len(sizes)} distinct blast-radius sizes in range; need {HARD_KIND_COUNT}")
+    bands = [
+        sizes[i * len(sizes) // HARD_KIND_COUNT : (i + 1) * len(sizes) // HARD_KIND_COUNT]
+        for i in range(HARD_KIND_COUNT)
+    ]
+    for band in bands:
+        band_ids = _sorted_ids(kid for kid, n in eligible.items() if n in set(band))
+        target = rng.choice(band_ids)
+        questions.append(
+            {
+                "kind": "blast_radius_count",
+                "question": f"What is the blast radius of KEP-{target}?",
+                "params": {"kep_id": target},
+                "gold": eligible[target],
+            }
+        )
+
+    # approvers
+    approver_pool = [k for k in valid if approver_handles(k)]
+    for kep in rng.sample(approver_pool, HARD_KIND_COUNT):
+        questions.append(
+            {
+                "kind": "approvers",
+                "question": f"Who approved KEP-{kep.kep_id}?",
+                "params": {"kep_id": kep.kep_id},
+                "gold": approver_handles(kep),
             }
         )
 

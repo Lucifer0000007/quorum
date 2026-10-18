@@ -4,62 +4,17 @@
   "questions": [
     {
       "id": "q01",
-      "kind": "has_successor",
-      "question": "Does KEP-2451 have a successor?",
+      "kind": "approvers",
+      "question": "Who approved KEP-583?",
       "params": {
-        "kep_id": "2451"
-      },
-      "gold": true
-    },
-    {
-      "id": "q02",
-      "kind": "has_successor",
-      "question": "Does KEP-2261 have a successor?",
-      "params": {
-        "kep_id": "2261"
-      },
-      "gold": false
-    },
-    {
-      "id": "q03",
-      "kind": "status",
-      "question": "What is the status of KEP-5541?",
-      "params": {
-        "kep_id": "5541"
-      },
-      "gold": "implementable"
-    },
-    {
-      "id": "q04",
-      "kind": "sig_kep_count",
-      "question": "How many KEPs does sig-architecture own?",
-      "params": {
-        "sig": "sig-architecture"
-      },
-      "gold": 17
-    },
-    {
-      "id": "q05",
-      "kind": "status",
-      "question": "What is the status of KEP-4008?",
-      "params": {
-        "kep_id": "4008"
-      },
-      "gold": "implementable"
-    },
-    {
-      "id": "q06",
-      "kind": "see_also_referrers",
-      "question": "Which KEPs list KEP-1710 in see-also?",
-      "params": {
-        "kep_id": "1710"
+        "kep_id": "583"
       },
       "gold": [
-        "3756"
+        "bsalamat"
       ]
     },
     {
-      "id": "q07",
+      "id": "q02",
       "kind": "owning_sig",
       "question": "Which SIG owns KEP-2299?",
       "params": {
@@ -68,16 +23,7 @@
       "gold": "sig-cli"
     },
     {
-      "id": "q08",
-      "kind": "has_successor",
-      "question": "Does KEP-583 have a successor?",
-      "params": {
-        "kep_id": "583"
-      },
-      "gold": true
-    },
-    {
-      "id": "q09",
+      "id": "q03",
       "kind": "has_successor",
       "question": "Does KEP-1040 have a successor?",
       "params": {
@@ -86,34 +32,72 @@
       "gold": false
     },
     {
-      "id": "q10",
-      "kind": "status",
-      "question": "What is the status of KEP-2025?",
+      "id": "q04",
+      "kind": "blast_radius_count",
+      "question": "What is the blast radius of KEP-1769?",
       "params": {
-        "kep_id": "2025"
+        "kep_id": "1769"
       },
-      "gold": "implementable"
+      "gold": 21
+    },
+    {
+      "id": "q05",
+      "kind": "has_successor",
+      "question": "Does KEP-2261 have a successor?",
+      "params": {
+        "kep_id": "2261"
+      },
+      "gold": false
+    },
+    {
+      "id": "q06",
+      "kind": "sig_kep_count",
+      "question": "How many KEPs does sig-architecture own?",
+      "params": {
+        "sig": "sig-architecture"
+      },
+      "gold": 17
+    },
+    {
+      "id": "q07",
+      "kind": "blast_radius_count",
+      "question": "What is the blast radius of KEP-5419?",
+      "params": {
+        "kep_id": "5419"
+      },
+      "gold": 25
+    },
+    {
+      "id": "q08",
+      "kind": "see_also_referrers",
+      "question": "Which KEPs list KEP-2386 in see-also?",
+      "params": {
+        "kep_id": "2386"
+      },
+      "gold": [
+        "2384"
+      ]
+    },
+    {
+      "id": "q09",
+      "kind": "blast_radius_count",
+      "question": "What is the blast radius of KEP-3070?",
+      "params": {
+        "kep_id": "3070"
+      },
+      "gold": 2
+    },
+    {
+      "id": "q10",
+      "kind": "sig_kep_count",
+      "question": "How many KEPs does sig-auth own?",
+      "params": {
+        "sig": "sig-auth"
+      },
+      "gold": 36
     },
     {
       "id": "q11",
-      "kind": "status",
-      "question": "What is the status of KEP-4381?",
-      "params": {
-        "kep_id": "4381"
-      },
-      "gold": "implemented"
-    },
-    {
-      "id": "q12",
-      "kind": "sig_kep_count",
-      "question": "How many KEPs does sig-release own?",
-      "params": {
-        "sig": "sig-release"
-      },
-      "gold": 15
-    },
-    {
-      "id": "q13",
       "kind": "owning_sig",
       "question": "Which SIG owns KEP-5681?",
       "params": {
@@ -122,7 +106,16 @@
       "gold": "sig-auth"
     },
     {
-      "id": "q14",
+      "id": "q12",
+      "kind": "has_successor",
+      "question": "Does KEP-2340 have a successor?",
+      "params": {
+        "kep_id": "2340"
+      },
+      "gold": false
+    },
+    {
+      "id": "q13",
       "kind": "see_also_referrers",
       "question": "Which KEPs list KEP-24 in see-also?",
       "params": {
@@ -133,7 +126,190 @@
       ]
     },
     {
+      "id": "q14",
+      "kind": "has_successor",
+      "question": "Does KEP-583 have a successor?",
+      "params": {
+        "kep_id": "583"
+      },
+      "gold": true
+    },
+    {
       "id": "q15",
+      "kind": "has_successor",
+      "question": "Does KEP-2451 have a successor?",
+      "params": {
+        "kep_id": "2451"
+      },
+      "gold": true
+    },
+    {
+      "id": "q16",
+      "kind": "approvers",
+      "question": "Who approved KEP-3503?",
+      "params": {
+        "kep_id": "3503"
+      },
+      "gold": [
+        "jsturtevant"
+      ]
+    },
+    {
+      "id": "q17",
+      "kind": "has_successor",
+      "question": "Does KEP-993 have a successor?",
+      "params": {
+        "kep_id": "993"
+      },
+      "gold": true
+    },
+    {
+      "id": "q18",
+      "kind": "has_successor",
+      "question": "Does KEP-536 have a successor?",
+      "params": {
+        "kep_id": "536"
+      },
+      "gold": true
+    },
+    {
+      "id": "q19",
+      "kind": "status",
+      "question": "What is the status of KEP-2249?",
+      "params": {
+        "kep_id": "2249"
+      },
+      "gold": "implementable"
+    },
+    {
+      "id": "q20",
+      "kind": "has_successor",
+      "question": "Does KEP-1513 have a successor?",
+      "params": {
+        "kep_id": "1513"
+      },
+      "gold": false
+    },
+    {
+      "id": "q21",
+      "kind": "owning_sig",
+      "question": "Which SIG owns KEP-491?",
+      "params": {
+        "kep_id": "491"
+      },
+      "gold": "sig-cli"
+    },
+    {
+      "id": "q22",
+      "kind": "approvers",
+      "question": "Who approved KEP-2450?",
+      "params": {
+        "kep_id": "2450"
+      },
+      "gold": [
+        "thockin"
+      ]
+    },
+    {
+      "id": "q23",
+      "kind": "sig_kep_count",
+      "question": "How many KEPs does sig-release own?",
+      "params": {
+        "sig": "sig-release"
+      },
+      "gold": 15
+    },
+    {
+      "id": "q24",
+      "kind": "status",
+      "question": "What is the status of KEP-4381?",
+      "params": {
+        "kep_id": "4381"
+      },
+      "gold": "implemented"
+    },
+    {
+      "id": "q25",
+      "kind": "approvers",
+      "question": "Who approved KEP-6404?",
+      "params": {
+        "kep_id": "6404"
+      },
+      "gold": [
+        "deads2k",
+        "liggitt",
+        "wojtek-t"
+      ]
+    },
+    {
+      "id": "q26",
+      "kind": "see_also_referrers",
+      "question": "Which KEPs list KEP-1710 in see-also?",
+      "params": {
+        "kep_id": "1710"
+      },
+      "gold": [
+        "3756"
+      ]
+    },
+    {
+      "id": "q27",
+      "kind": "owning_sig",
+      "question": "Which SIG owns KEP-5027?",
+      "params": {
+        "kep_id": "5027"
+      },
+      "gold": "sig-scheduling"
+    },
+    {
+      "id": "q28",
+      "kind": "owning_sig",
+      "question": "Which SIG owns KEP-6060?",
+      "params": {
+        "kep_id": "6060"
+      },
+      "gold": "sig-auth"
+    },
+    {
+      "id": "q29",
+      "kind": "see_also_referrers",
+      "question": "Which KEPs list KEP-3973 in see-also?",
+      "params": {
+        "kep_id": "3973"
+      },
+      "gold": [
+        "5882"
+      ]
+    },
+    {
+      "id": "q30",
+      "kind": "status",
+      "question": "What is the status of KEP-5541?",
+      "params": {
+        "kep_id": "5541"
+      },
+      "gold": "implementable"
+    },
+    {
+      "id": "q31",
+      "kind": "blast_radius_count",
+      "question": "What is the blast radius of KEP-3063?",
+      "params": {
+        "kep_id": "3063"
+      },
+      "gold": 40
+    },
+    {
+      "id": "q32",
+      "kind": "sig_kep_count",
+      "question": "How many KEPs does sig-network own?",
+      "params": {
+        "sig": "sig-network"
+      },
+      "gold": 62
+    },
+    {
+      "id": "q33",
       "kind": "see_also_referrers",
       "question": "Which KEPs list KEP-5732 in see-also?",
       "params": {
@@ -149,7 +325,16 @@
       ]
     },
     {
-      "id": "q16",
+      "id": "q34",
+      "kind": "status",
+      "question": "What is the status of KEP-2025?",
+      "params": {
+        "kep_id": "2025"
+      },
+      "gold": "implementable"
+    },
+    {
+      "id": "q35",
       "kind": "sig_kep_count",
       "question": "How many KEPs does sig-instrumentation own?",
       "params": {
@@ -158,116 +343,33 @@
       "gold": 20
     },
     {
-      "id": "q17",
-      "kind": "sig_kep_count",
-      "question": "How many KEPs does sig-network own?",
-      "params": {
-        "sig": "sig-network"
-      },
-      "gold": 62
-    },
-    {
-      "id": "q18",
-      "kind": "has_successor",
-      "question": "Does KEP-536 have a successor?",
-      "params": {
-        "kep_id": "536"
-      },
-      "gold": true
-    },
-    {
-      "id": "q19",
-      "kind": "owning_sig",
-      "question": "Which SIG owns KEP-5027?",
-      "params": {
-        "kep_id": "5027"
-      },
-      "gold": "sig-scheduling"
-    },
-    {
-      "id": "q20",
+      "id": "q36",
       "kind": "status",
-      "question": "What is the status of KEP-2249?",
+      "question": "What is the status of KEP-4008?",
       "params": {
-        "kep_id": "2249"
+        "kep_id": "4008"
       },
       "gold": "implementable"
     },
     {
-      "id": "q21",
-      "kind": "see_also_referrers",
-      "question": "Which KEPs list KEP-2386 in see-also?",
+      "id": "q37",
+      "kind": "approvers",
+      "question": "Who approved KEP-3299?",
       "params": {
-        "kep_id": "2386"
+        "kep_id": "3299"
       },
       "gold": [
-        "2384"
+        "smarterclayton"
       ]
     },
     {
-      "id": "q22",
-      "kind": "see_also_referrers",
-      "question": "Which KEPs list KEP-3973 in see-also?",
+      "id": "q38",
+      "kind": "blast_radius_count",
+      "question": "What is the blast radius of KEP-1451?",
       "params": {
-        "kep_id": "3973"
+        "kep_id": "1451"
       },
-      "gold": [
-        "5882"
-      ]
-    },
-    {
-      "id": "q23",
-      "kind": "has_successor",
-      "question": "Does KEP-993 have a successor?",
-      "params": {
-        "kep_id": "993"
-      },
-      "gold": true
-    },
-    {
-      "id": "q24",
-      "kind": "sig_kep_count",
-      "question": "How many KEPs does sig-auth own?",
-      "params": {
-        "sig": "sig-auth"
-      },
-      "gold": 36
-    },
-    {
-      "id": "q25",
-      "kind": "has_successor",
-      "question": "Does KEP-1513 have a successor?",
-      "params": {
-        "kep_id": "1513"
-      },
-      "gold": false
-    },
-    {
-      "id": "q26",
-      "kind": "owning_sig",
-      "question": "Which SIG owns KEP-6060?",
-      "params": {
-        "kep_id": "6060"
-      },
-      "gold": "sig-auth"
-    },
-    {
-      "id": "q27",
-      "kind": "owning_sig",
-      "question": "Which SIG owns KEP-491?",
-      "params": {
-        "kep_id": "491"
-      },
-      "gold": "sig-cli"
-    },
-    {
-      "id": "q28",
-      "kind": "has_successor",
-      "question": "Does KEP-2340 have a successor?",
-      "params": {
-        "kep_id": "2340"
-      },
-      "gold": false
+      "gold": 8
     }
   ]
 }

@@ -17,6 +17,47 @@ validated parameters and (2) format a staged notice. Verdicts never come from th
 - Generated: repo skeleton, docker-compose (FalkorDB pinned `v4.22.1`), Makefile, CLAUDE.md, this file,
   README skeleton, `.mcp.json`, subagent definitions, post-edit hook.
 
+### 2. Phase 1: data
+- The assistant wrote `ingest/parse.py` (pure parser), its tests on 10 real kep.yaml fixtures, `ingest/load.py`
+  (UNWIND/MERGE loader) and `scripts/data_report.py`.
+- It ran ingest twice to prove the counts don't change.
+- It found SIG spelling variants (`sig-scheduler`, `sig-arch`, …) in the real data and added an explicit alias table.
+
+### 3. Phase 2: query layer
+- The assistant wrote the guard, the 16 read-only templates, the RO runner and the query tools.
+- It probed FalkorDB 4.22 Cypher support live before writing templates: pattern comprehension,
+  `properties()`, path functions, `algo.pageRank`. It also confirmed that `RO_QUERY` rejects writes.
+- An **eval-agent subagent** wrote `evals/make_gold.py`, an independent YAML-only gold generator, and its tests.
+- A **cypher-reviewer subagent** audited the templates against the live graph. It recomputed the blast radius
+  for all 647 numbered KEPs with its own BFS (exact match) and reported 7 issues, all fixed:
+  - duplicate stale-ancestor and successor rows
+  - unknown SIGs returning zeros instead of 404
+  - GitHub team aliases (e.g. `@sig-node-tech-leads`) counted as people
+  - Cypher runs missing from the evidence panel
+  - float scores
+
+### 4. Phase 3: bailiff
+- The assistant wrote the deterministic rules R1–R4 and the approval-gate write path.
+- The rule thresholds were chosen from a pure-Python simulation over the YAML. The live verdict distribution
+  over all 648 KEPs matches that simulation exactly.
+
+### 5. Phase 4: API and UI
+- The assistant wrote the FastAPI app, the keyword router and the optional LLM router.
+- It loaded the `claude-api` skill first and learned that Claude Opus 5.5 rejects forced `tool_choice`, so the
+  router uses `auto` with strict tools.
+- It wrote the single-page UI, after loading the frontend-design skill.
+- It checked the UI with a Python Playwright click-through:
+  - all three verdicts
+  - approve, then the prior-precedent banner
+  - error states
+  - 390 px mobile (fixed a horizontal overflow)
+
+### 6. Phases 5–6: eval and ship
+- The assistant wrote `evals/run_eval.py`, which runs each question through the router and the live graph.
+- The eval-agent added blast-radius-count and approver questions, making 38 in total.
+- The README's numbers and Cypher sections are generated from data and code by `scripts/render_readme.py`.
+- It also wrote the Dockerfile and DEMO.md.
+
 ### Assumptions (stated instead of asking)
 - **Docker:** not installed on the dev Windows machine (no admin), so FalkorDB runs in Docker Engine
   inside WSL2 Debian. `docker-compose.yml` is the standard one; `local.mk` (gitignored) points `DOCKER`

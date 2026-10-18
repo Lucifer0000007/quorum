@@ -24,6 +24,8 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     ports:
       - "8000:8000"
+    volumes:
+      - ./data:/app/data   # corpus clone for `docker compose --profile app run --rm app python -m ingest.load`
     depends_on:
       falkordb:
         condition: service_healthy

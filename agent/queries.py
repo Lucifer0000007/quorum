@@ -207,6 +207,7 @@ def why(kep_id: str) -> dict:
         {"step": "tracked in", "value": r["issue_url"] or "(no valid KEP number, no issue)", "source": r["issue_url"]},
     ]
     result = {"kep_id": kid, "chain": chain, "lineage": lineage, "unresolved_refs": r["unresolved_refs"] or [],
+              "approvers": sorted(r["approvers"]), "authors": sorted(r["authors"]),
               "note": "Only fields present in kep.yaml are shown; no free-text rationale is inferred."}
     links = kep_links({"id": kid, "source_url": r["source_url"], "issue_url": r["issue_url"], "number": None})
     path = [[kid, "DEFINED_IN", "kep.yaml"], [kid, "TRACKED_IN", f"issue #{kid}" if r["issue_url"] else "none"],

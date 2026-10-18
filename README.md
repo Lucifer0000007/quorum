@@ -1,19 +1,477 @@
-# Quorum: a pre-flight check for engineering decisions
+# Quorum
 
 **Graph Hacks · FalkorDB · Track 03: Company Brain**
 
-> Work in progress. Sections fill in as phases land.
+Quorum is a pre-flight check for engineering decisions. Before you replace an old decision, it tells you
+what else rests on it, which teams have to agree, and who actually knows the area. Every answer shows the
+graph path, the exact Cypher that ran, and a link to the source.
 
-## Problem
+The "company" is the public Kubernetes project:
+
+| Company concept | Kubernetes |
+|---|---|
+| Teams | SIGs (sig-node, sig-scheduling, …) |
+| Decisions | KEPs, Kubernetes Enhancement Proposals (`keps/*/*/kep.yaml`) |
+| Tickets | the KEP tracking issues (`kubernetes/enhancements/issues/<n>`) |
+| People | KEP authors, reviewers and approvers |
+
+## The problem
+
+Large engineering organizations write decisions down, then lose track of how they connect. When someone
+proposes to supersede a design, the questions that matter are graph questions: which other active decisions
+link to this one, how many teams own those, is the thing we depend on already dead, and who reviewed this
+area recently. Keyword search over documents can't answer them reliably, and an LLM guessing at them is
+worse than no answer.
+
 ## What it does
+
+1. **Ask the company brain.** "Who knows about sig-scheduling?", "Does KEP-2377 have a successor?", "Which KEPs
+   list KEP-1287 in see-also?", "Why does KEP-4381 exist?". Each question routes to one typed tool backed by
+   a read-only Cypher template.
+2. **Simulate superseding a KEP.** The bailiff, a deterministic rule set, walks the graph and returns
+   `CLEAN`, `AT_RISK` or `HUMAN_GATE_REQUIRED`. It also returns the blast radius (affected KEPs, SIGs and the path to
+   each), stale dependencies, suggested reviewers and source links. "No path found" is reported as a real result.
+3. **Approve behind a human gate.** Quorum stages an impact notice and never sends it. When a human clicks
+   "Approve and record precedent", Quorum writes a `Precedent` into a second graph, `agent_episodic_memory`. The next check of
+   the same KEP shows a "checked before" banner from that graph.
+
 ## Architecture
+
+```
+ kubernetes/enhancements (public)      ingest/ (pure Python, no LLM)            FalkorDB (Docker, v4.22.1)
+ keps/*/*/kep.yaml  ──clone──▶  parse.py ──rows──▶ load.py ──UNWIND…MERGE──▶  graph "company_brain"  (Meta.ready)
+                                                                                        │ GRAPH.RO_QUERY, 3 s timeout
+ Browser UI (ui/) ──HTTP──▶ FastAPI (agent/api.py)                                      │
+   ask box, KEP picker        │ router.py: keyword rules, or optional LLM tool choice   │
+   verdict card               │   └─ pydantic-validated typed params ───────────────────┤
+   blast radius + paths       │ queries.py / templates.py (16 guarded templates) ◀─────┘
+   Cypher evidence panel      │ bailiff.py: deterministic verdict rules R1–R4
+   staged notice + Approve ───┴▶ episodic.py: MERGE Precedent ──▶ graph "agent_episodic_memory"
+```
+
+FalkorDB does the core work. Every answer is a Cypher traversal: variable-length paths over
+`REPLACES|SEE_ALSO` in both directions, per-KEP shortest paths, recency-weighted aggregation over people, and
+`algo.pageRank` for KEP centrality. Without FalkorDB there is no answer, no verdict and no precedent. The app
+refuses to serve anything until `Meta.ready = true`.
+
 ## Graph data model
-## Key Cypher queries
-## Verdict rules
+
+```
+Graph "company_brain" (read-only for the agent)
+
+  (:Person {handle})
+      │  AUTHORED / REVIEWED / APPROVED
+      ▼
+  (:KEP {id, number, path, title, status, status_raw, stage, latest_milestone, latest_minor,
+         creation_date, owning_sig, source_url, issue_url, unresolved_refs})
+      │  OWNED_BY ─────────────▶ (:SIG {name})
+      │  PARTICIPATES ─────────▶ (:SIG)            read as "the SIG participates in the KEP"
+      │  SEE_ALSO ─────────────▶ (:KEP)            from kep.yaml see-also
+      │  REPLACES ─────────────▶ (:KEP)            from replaces, and reversed superseded-by
+  (:Meta {key:'brain', data_hash, source_commit, max_minor, kep_count, person_count, sig_count,
+          edge_count, ready})
+
+Graph "agent_episodic_memory" (written only by the approval gate)
+
+  (:Session {id}) ─CHECKED▶ (:Precedent {id, verdict, kep_id, action, created_at, data_hash,
+                                         staged_notice}) ─ABOUT▶ (:KEPRef {id})
+```
+
+Indexes: `KEP.id`, `Person.handle`, `SIG.name`, `Meta.key`.
+
+How the data is cleaned:
+- **KEP identity:** a KEP's id is its kep-number when that number is valid and unique. If the number is missing, zero or
+  shared by two folders (kep-number 2133 is used by two KEPs), the id is `<sig>/<folder>`. Looking up an ambiguous number fails loudly and lists the
+  candidates.
+- **Statuses:** normalized with an explicit table. For example, `imlpemented` → implemented and `superseded` →
+  replaced. The raw value is kept in `status_raw`.
+- **SIG names:** spelling variants (`sig-scheduler`, `sig-arch`, …) are merged so the "2+ SIGs" rule doesn't double-count.
+- **References:** references that don't resolve to a KEP (design docs, legacy `.md` paths, "TODO") are kept as
+  `KEP.unresolved_refs` and counted. They are never guessed.
+- **Handles:** "@" is stripped and handles are lowercased. TBD and empty entries are skipped, and so are GitHub team aliases like
+  `@sig-node-tech-leads`, because those are not people.
+
+### The data, in numbers
+
+<!-- STATS:START -->
+
+_Generated by `python -m scripts.render_readme` from `data/report.json`, `data/verdicts.json` and `evals/results.json`; not typed by hand._
+
+- Corpus: kubernetes/enhancements @ `5b503a75369b`: **648** kep.yaml files, **0** parse failures, data hash `32731b67d488`.
+- Graph: 648 KEPs, 693 people, 32 SIGs; edges AUTHORED 1100, REVIEWED 1837, APPROVED 1203, OWNED_BY 648, PARTICIPATES 615, SEE_ALSO 314, REPLACES 9.
+- see-also references: 314 resolved to a KEP, 141 unresolvable (kept on `KEP.unresolved_refs`), 100 placeholders (n/a, TBD). replaces: 8 resolved / 24 unresolvable. superseded-by: 1 resolved.
+- Cleaning: 5 status values normalized, 59 handles skipped (TBD, empty, team aliases), 5 KEPs keyed by folder because their number is missing or duplicated; prr-approvers non-empty in 0 files.
+- "Recent" threshold: latest-milestone >= v1.35 (corpus max minus 3).
+- Verdicts over all 648 KEPs (live graph): CLEAN 339, AT_RISK 187, HUMAN_GATE_REQUIRED 122; rules fired: CLEAN 339, R2 147, R1 122, R4 63, R3 32.
+- Cross-check: a pure-Python re-implementation over the raw YAML predicts AT_RISK 187, CLEAN 339, HUMAN_GATE_REQUIRED 122 (identical).
+- Eval: **38/38 (100.0%)** questions answered correctly via the keyword router + live graph, run 2026-10-18T14:26:35+00:00 on data `32731b67d488`; by kind: approvers 5/5, owning_sig 5/5, has_successor 8/8, blast_radius_count 5/5, sig_kep_count 5/5, see_also_referrers 5/5, status 5/5.
+
+<!-- STATS:END -->
+
+## Verdict rules (the bailiff)
+
+`agent/bailiff.py` evaluates these rules over graph facts. No LLM is involved.
+
+| Rule | Effect | Fires when |
+|---|---|---|
+| R1 | `HUMAN_GATE_REQUIRED` | active KEPs (provisional, implementable or implemented) within 3 `REPLACES`/`SEE_ALSO` hops, in either direction, are owned by **2 or more** SIGs |
+| R2 | `AT_RISK` | active KEPs within 3 hops exist, all owned by one SIG |
+| R3 | `AT_RISK` | the target depends, via outgoing `SEE_ALSO` within 3 hops, on a stale KEP (replaced, rejected, withdrawn or deferred) |
+| R4 | `AT_RISK` | none of the target's approvers is recently active, or no approvers are listed |
+| none | `CLEAN` | none of the above: "no path found" to any active KEP within 3 hops |
+
+**"Recently active"** uses only kep.yaml fields. A person is recently active if they are listed as author,
+reviewer or approver on any KEP whose `latest-milestone` is within the 4 newest minors in the corpus. The newest minor is
+computed at ingest, never hardcoded. We have no activity history beyond that, so we don't claim any.
+
+**Thresholds.** The 2-SIG threshold and the 3-hop radius were chosen with `scripts/data_report.py`, which simulates the
+rules over the raw YAML, so every verdict occurs on real KEPs. A 3-SIG threshold halves the number of gated KEPs. The
+live distribution across all KEPs appears in the numbers above.
+
+**Suggested reviewers** come from `who_knows`, using this formula:
+`score(person) = Σ over (role, KEP) pairs in scope of w(KEP)`, where `w = 2` if the KEP's latest-milestone is
+recent and `1` otherwise. Scope is the KEP plus its 2-hop neighborhood, or a SIG's owned and participating KEPs.
+
+**Real examples** (the tests run each of these against the live graph):
+
+| KEP | Verdict | Why |
+|---|---|---|
+| KEP-1020 | `CLEAN` | no links at all |
+| KEP-624 | `AT_RISK` | R2: active neighbours, all in sig-scheduling |
+| KEP-3327 | `AT_RISK` | R2 + R4: its only approver is the team alias `@sig-node-tech-leads` |
+| KEP-5468 | `AT_RISK` | R2 + R3: see-also points to KEP-4153, which is replaced |
+| KEP-1287 / KEP-4381 | `HUMAN_GATE_REQUIRED` | in-place pod resize and DRA reach 6–7 SIGs within 3 hops |
+
 ## Safety design
+
+- **Read-only agent:** agent reads go only through 16 named, parameterized templates (`agent/templates.py`). They are
+  executed with `GRAPH.RO_QUERY` and a 3000 ms timeout, and every one ends in `LIMIT ≤ 100`.
+- **Two layers against writes:**
+  - `agent/guard.py` rejects `CREATE`, `MERGE`, `SET`, `DELETE`, `REMOVE`, `DROP`, `FOREACH`, `LOAD CSV` and any
+    non-allow-listed `CALL`. It also rejects a missing or oversized `LIMIT` and a timeout over 3 s. It runs on every
+    template at import time and again before each execution.
+  - FalkorDB's `RO_QUERY` independently refuses writes.
+  - `make lint` runs `scripts/lint_cypher.py`, which checks that no `agent/` module other than the approval gate
+    calls a write-capable `.query(`.
+- **The LLM never writes Cypher and never decides:**
+  - With `ANTHROPIC_API_KEY` set, the LLM only picks one tool and fills its parameters. Those parameters are
+    validated by pydantic (`agent/router.py`) before any query runs.
+  - Optionally, the LLM writes a 3-sentence summary of a staged notice. Quorum rejects that summary if it names
+    any KEP, SIG or person that isn't in the notice.
+  - Without a key, a deterministic keyword router answers everything, and the UI says so. LLM errors are shown
+    to the user, never silently replaced.
+- **Nothing leaves the machine:** Quorum never posts to GitHub or any external service. `/approve` only accepts
+  notice ids that this server staged, refuses notices staged on older graph data, and `MERGE`s on the notice id,
+  so a double click records one precedent.
+- **Fails loudly:** an unready graph returns 503, an unknown KEP or SIG 404, an ambiguous KEP number 409, an
+  unroutable question 422. No fake data and no fallbacks.
+- **Idempotent ingest:** everything is `UNWIND … MERGE`, and `Meta` holds only deterministic values. Re-running
+  `make ingest` leaves every count and property unchanged, which an integration test checks. `--rebuild` drops
+  and reloads the graph when the upstream data changes.
+
 ## Setup
+
+Requirements: Docker, Python 3.11+, git, make.
+
+```bash
+git clone https://github.com/Lucifer0000007/quorum && cd quorum
+make venv          # python3 -m venv .venv && pip install -r requirements.txt
+make up            # FalkorDB v4.22.1 on :6379 (Browser on :3000), waits for PING
+make clone-data    # shallow clone of kubernetes/enhancements into data/enhancements
+make ingest        # parse + idempotent MERGE into "company_brain" (about 2 s)
+make run           # http://127.0.0.1:8000
+```
+
+Checks: `make test` (unit and live-graph integration tests), `make lint` (ruff and the Cypher lint),
+`make check` (graph ready, labels and edges present), `make eval`, `make report` (writes `data/report.json`).
+
+Optional: put `ANTHROPIC_API_KEY=...` in `.env` (see `.env.example`) to enable LLM tool selection. The default
+model is `claude-opus-5-5`; override it with `QUORUM_LLM_MODEL`.
+
+To run the app in Docker too: `make up && make clone-data`, then
+`docker compose --profile app run --rm app python -m ingest.load` and `docker compose --profile app up -d`.
+
+We built this on Windows without Docker Desktop: FalkorDB ran in Docker Engine inside WSL2, with
+`DOCKER := wsl -d Debian -u root -- docker` in a git-ignored `local.mk`. **There is no live deployment;** this
+section is the complete local setup.
+
 ## Demo
+
+See [DEMO.md](DEMO.md) for the 2-minute script: ask, then simulate superseding KEP-4381, then approve and see
+the precedent.
+
 ## Eval
+
+`evals/make_gold.py` computes gold answers directly from the raw YAML. It is an independent re-implementation
+that never imports `ingest/` and never touches FalkorDB. `evals/run_eval.py` then asks each question through the real path: router,
+typed tool, FalkorDB. The score is recorded in `evals/results.json`, shown in the UI header, and summarized in
+the numbers above. The UI marks it stale if the graph data has changed since the eval ran.
+
+A cypher-reviewer subagent separately recomputed the 3-hop blast radius for all 647 numbered KEPs, using its own YAML
+parse and BFS, and matched the graph exactly.
+
 ## Limitations
+
+- **Sparse links:** the graph only knows links that kep.yaml records. 141 see-also and 24 replaces
+  references point to design docs or pre-numbering `.md` paths and can't be resolved, so we keep them
+  as `unresolved_refs`. Superseding a KEP may affect things the corpus never linked.
+- **Proxy for activity:** "recently active" approximates activity with latest-milestone. We did not ingest
+  GitHub comment or PR activity.
+- **No PRR data:** `prr-approvers` is empty in every kep.yaml, and we did not ingest `keps/prod-readiness/`.
+- **Narrow eval:** the eval covers factual lookups and blast-radius counts (questions phrased for the keyword
+  router). A perfect score means two independent implementations of the same documented normalization rules
+  agree; a misreading shared by both would not be caught. It does not measure whether the verdict rules are the right policy. That is a judgment call we
+  document rather than score.
+- **Keyword router:** it is simple pattern matching. Unusual phrasings get a clear routing error, not a guess.
+- **Ingest never deletes:** MERGE-only ingest does not remove nodes deleted upstream. It warns when the data hash
+  changes, and you use `make ingest` with `--rebuild` (`python -m ingest.load --rebuild`).
+- **Engine version:** FalkorDB is pinned to the 4.x C engine (`v4.22.1`). The new 6.x Rust engine (`latest`) was not tested.
+- **Ephemeral staging:** staged notices live in server memory. Restarting the server means re-running the pre-flight
+  check before approving.
+
+## Key Cypher queries
+
+<!-- QUERIES:START -->
+
+### Agent read templates (`agent/templates.py`, via `GRAPH.RO_QUERY`, 3 s timeout)
+
+**`meta`** (brain graph): Load metadata and the readiness flag.
+
+```cypher
+MATCH (m:Meta {key: 'brain'})
+RETURN m.ready AS ready, m.data_hash AS data_hash, m.source_commit AS source_commit, m.max_minor AS max_minor,
+       m.kep_count AS kep_count, m.person_count AS person_count, m.sig_count AS sig_count, m.edge_count AS edge_count
+LIMIT 1
+```
+
+**`resolve_kep`** (brain graph): Map a user-supplied KEP number or id to KEP node ids (detects ambiguous numbers).
+
+```cypher
+MATCH (k:KEP)
+WHERE k.id = $kep_id OR k.number = $kep_id
+RETURN k.id AS id, k.title AS title, k.path AS path
+LIMIT 10
+```
+
+**`search_keps`** (brain graph): KEP picker search by number, title or folder.
+
+```cypher
+MATCH (k:KEP)
+WHERE k.id = $q OR k.number = $q OR toLower(k.title) CONTAINS toLower($q) OR toLower(k.path) CONTAINS toLower($q)
+RETURN k.id AS id, k.title AS title, k.status AS status, k.owning_sig AS owning_sig
+ORDER BY CASE WHEN k.id = $q THEN 0 ELSE 1 END, id
+LIMIT $limit
+```
+
+**`kep_detail`** (brain graph): KEP metadata, owning/participating SIGs, people by role, and direct REPLACES/SEE_ALSO neighbors.
+
+```cypher
+MATCH (k:KEP {id: $kep_id})
+OPTIONAL MATCH (k)-[:OWNED_BY]->(o:SIG)
+OPTIONAL MATCH (k)-[:PARTICIPATES]->(ps:SIG)
+WITH k, collect(DISTINCT o.name) AS owning_sigs, collect(DISTINCT ps.name) AS participating_sigs
+OPTIONAL MATCH (p:Person)-[r:AUTHORED|REVIEWED|APPROVED]->(k)
+WITH k, owning_sigs, participating_sigs, collect(DISTINCT [type(r), p.handle]) AS people
+OPTIONAL MATCH (k)-[n:REPLACES|SEE_ALSO]-(m:KEP)
+RETURN properties(k) AS kep, owning_sigs, participating_sigs, people,
+       collect(DISTINCT [startNode(n).id, type(n), endNode(n).id, m.id, m.title, m.status]) AS neighbors
+LIMIT 1
+```
+
+**`blast_radius`** (brain graph): KEPs reachable via REPLACES/SEE_ALSO in either direction within 3 hops, with one shortest path each.
+
+```cypher
+MATCH (k:KEP {id: $kep_id})
+MATCH p = (k)-[:REPLACES|SEE_ALSO*1..3]-(o:KEP)
+WHERE o.id <> k.id
+WITH o, p ORDER BY length(p)
+WITH o, collect(p)[0] AS sp
+OPTIONAL MATCH (o)-[:OWNED_BY]->(s:SIG)
+RETURN o.id AS id, o.title AS title, o.status AS status, s.name AS owning_sig, o.source_url AS source_url,
+       length(sp) AS hops, [n IN nodes(sp) | n.id] AS path_nodes,
+       [r IN relationships(sp) | [startNode(r).id, type(r), endNode(r).id]] AS path_edges
+ORDER BY hops, id
+LIMIT 100
+```
+
+**`is_still_valid`** (brain graph): Status, successor chain, predecessors, and stale KEPs this KEP depends on via SEE_ALSO (3 hops).
+
+```cypher
+MATCH (k:KEP {id: $kep_id})
+OPTIONAL MATCH sp = (k)<-[:REPLACES*1..5]-(s:KEP)
+WITH k, s, min(length(sp)) AS sh
+WITH k, collect(DISTINCT [s.id, s.title, s.status, sh]) AS successors
+OPTIONAL MATCH pp = (k)-[:REPLACES*1..5]->(pr:KEP)
+WITH k, successors, pr, min(length(pp)) AS ph
+WITH k, successors, collect(DISTINCT [pr.id, pr.title, pr.status, ph]) AS predecessors
+OPTIONAL MATCH ap = (k)-[:SEE_ALSO*1..3]->(a:KEP)
+WHERE a.status IN $stale_statuses
+WITH k, successors, predecessors, a, ap ORDER BY length(ap)
+WITH k, successors, predecessors, a, collect(ap)[0] AS best
+RETURN k.id AS id, k.title AS title, k.status AS status, k.status_raw AS status_raw, successors, predecessors,
+       collect(DISTINCT [a.id, a.title, a.status,
+                         CASE WHEN best IS NULL THEN [] ELSE [n IN nodes(best) | n.id] END]) AS stale_ancestors
+LIMIT 1
+```
+
+**`who_knows_sig`** (brain graph): Rank people by recency-weighted KEP contributions (author/review/approve) in a SIG.
+
+```cypher
+MATCH (s:SIG {name: $sig})<-[:OWNED_BY|PARTICIPATES]-(k:KEP)
+WITH DISTINCT k
+MATCH (p:Person)-[r:AUTHORED|REVIEWED|APPROVED]->(k)
+WITH p, k, type(r) AS role,
+     CASE WHEN k.latest_minor IS NOT NULL AND k.latest_minor >= $recent_min_minor THEN 2 ELSE 1 END AS w
+RETURN p.handle AS handle, toInteger(sum(w)) AS score, count(DISTINCT k) AS keps,
+       toInteger(sum(CASE WHEN w = 2 THEN 1 ELSE 0 END)) AS recent_contributions,
+       collect(DISTINCT role) AS roles, collect(DISTINCT k.id)[0..5] AS sample_keps
+ORDER BY score DESC, handle
+LIMIT $limit
+```
+
+**`who_knows_kep`** (brain graph): Rank people by recency-weighted contributions to a KEP and its 2-hop REPLACES/SEE_ALSO neighborhood.
+
+```cypher
+MATCH (k:KEP {id: $kep_id})
+OPTIONAL MATCH (k)-[:REPLACES|SEE_ALSO*1..2]-(n:KEP)
+WITH k, collect(DISTINCT n) + [k] AS hood
+UNWIND hood AS h
+WITH DISTINCT h
+MATCH (p:Person)-[r:AUTHORED|REVIEWED|APPROVED]->(h)
+WITH p, h, type(r) AS role,
+     CASE WHEN h.latest_minor IS NOT NULL AND h.latest_minor >= $recent_min_minor THEN 2 ELSE 1 END AS w
+RETURN p.handle AS handle, toInteger(sum(w)) AS score, count(DISTINCT h) AS keps,
+       toInteger(sum(CASE WHEN w = 2 THEN 1 ELSE 0 END)) AS recent_contributions,
+       collect(DISTINCT role) AS roles, collect(DISTINCT h.id)[0..5] AS sample_keps
+ORDER BY score DESC, handle
+LIMIT $limit
+```
+
+**`recent_approvers`** (brain graph): Which of a KEP's approvers are recently active (listed on any KEP with a recent latest-milestone).
+
+```cypher
+MATCH (a:Person)-[:APPROVED]->(k:KEP {id: $kep_id})
+OPTIONAL MATCH (a)-[:AUTHORED|REVIEWED|APPROVED]->(r:KEP)
+WHERE r.latest_minor IS NOT NULL AND r.latest_minor >= $recent_min_minor
+RETURN a.handle AS handle, count(DISTINCT r) AS recent_keps, max(r.latest_milestone) AS latest_seen
+ORDER BY handle
+LIMIT 100
+```
+
+**`why`** (brain graph): Provenance chain: kep.yaml URL, tracking issue, owning SIG, approvers/authors, KEP lineage.
+
+```cypher
+MATCH (k:KEP {id: $kep_id})
+OPTIONAL MATCH (k)-[:OWNED_BY]->(o:SIG)
+OPTIONAL MATCH (a:Person)-[:APPROVED]->(k)
+WITH k, o, collect(DISTINCT a.handle) AS approvers
+OPTIONAL MATCH (au:Person)-[:AUTHORED]->(k)
+WITH k, o, approvers, collect(DISTINCT au.handle) AS authors
+OPTIONAL MATCH (k)-[l:REPLACES|SEE_ALSO]-(m:KEP)
+RETURN k.id AS id, k.title AS title, k.status AS status, k.status_raw AS status_raw,
+       k.creation_date AS creation_date, k.latest_milestone AS latest_milestone, k.stage AS stage,
+       k.source_url AS source_url, k.issue_url AS issue_url, o.name AS owning_sig, approvers, authors,
+       collect(DISTINCT [startNode(l).id, type(l), endNode(l).id, m.title]) AS lineage,
+       k.unresolved_refs AS unresolved_refs
+LIMIT 1
+```
+
+**`referrers`** (brain graph): KEPs that list this KEP in see-also.
+
+```cypher
+MATCH (k:KEP {id: $kep_id})<-[:SEE_ALSO]-(r:KEP)
+RETURN r.id AS id, r.title AS title, r.status AS status, r.owning_sig AS owning_sig, r.source_url AS source_url
+ORDER BY id
+LIMIT 100
+```
+
+**`sig_overview`** (brain graph): How many KEPs a SIG owns, by status.
+
+```cypher
+MATCH (s:SIG {name: $sig})<-[:OWNED_BY]-(k:KEP)
+RETURN s.name AS sig, count(k) AS owned, collect(DISTINCT k.status) AS statuses,
+       toInteger(sum(CASE WHEN k.status IN $active_statuses THEN 1 ELSE 0 END)) AS active
+LIMIT 1
+```
+
+**`sig_exists`** (brain graph): Check that a SIG node exists (unknown SIGs fail loudly instead of returning zero).
+
+```cypher
+MATCH (s:SIG {name: $sig})
+RETURN s.name AS name
+LIMIT 1
+```
+
+**`list_sigs`** (brain graph): All SIGs with the number of KEPs they own.
+
+```cypher
+MATCH (s:SIG)
+OPTIONAL MATCH (k:KEP)-[:OWNED_BY]->(s)
+RETURN s.name AS name, count(k) AS owned
+ORDER BY owned DESC, name
+LIMIT 100
+```
+
+**`central_keps`** (brain graph): Most central KEPs by PageRank over SEE_ALSO (FalkorDB algorithm procedure).
+
+```cypher
+CALL algo.pageRank('KEP', 'SEE_ALSO') YIELD node, score
+RETURN node.id AS id, node.title AS title, node.owning_sig AS owning_sig, score
+ORDER BY score DESC
+LIMIT $limit
+```
+
+**`prior_precedents`** (episodic graph): Approved precedents previously recorded for this KEP (second graph).
+
+```cypher
+MATCH (s:Session)-[:CHECKED]->(p:Precedent)-[:ABOUT]->(r:KEPRef {id: $kep_id})
+RETURN p.id AS id, p.verdict AS verdict, p.created_at AS created_at, s.id AS session_id,
+       p.data_hash AS data_hash, p.action AS action
+ORDER BY created_at DESC
+LIMIT 5
+```
+
+### Approval-gate write (`agent/episodic.py`, graph `agent_episodic_memory` only)
+
+```cypher
+MERGE (s:Session {id: $session_id})
+MERGE (p:Precedent {id: $notice_id})
+ON CREATE SET p.created_at = $created_at, p.verdict = $verdict, p.kep_id = $kep_id, p.action = $action,
+              p.staged_notice = $markdown, p.data_hash = $data_hash
+MERGE (s)-[:CHECKED]->(p)
+MERGE (r:KEPRef {id: $kep_id})
+MERGE (p)-[:ABOUT]->(r)
+RETURN p.id AS id, p.created_at AS created_at, p.verdict AS verdict
+```
+
+### Ingest (`ingest/load.py`, idempotent `UNWIND ... MERGE`, batches of 300)
+
+```cypher
+UNWIND $rows AS r MERGE (:SIG {name: r.name})
+UNWIND $rows AS r MERGE (:Person {handle: r.handle})
+UNWIND $rows AS r
+MERGE (k:KEP {id: r.id})
+SET k.path = r.path, k.number = r.number, k.title = r.title, k.status = r.status, k.status_raw = r.status_raw,
+    k.stage = r.stage, k.latest_milestone = r.latest_milestone, k.latest_minor = r.latest_minor,
+    k.creation_date = r.creation_date, k.owning_sig = r.owning_sig, k.source_url = r.source_url,
+    k.issue_url = r.issue_url, k.unresolved_refs = r.unresolved_refs
+UNWIND $rows AS r MATCH (a:KEP {id: r.src}) MATCH (b:KEP {id: r.dst}) MERGE (a)-[:SEE_ALSO]->(b)
+UNWIND $rows AS r MATCH (p:Person {handle: r.src}) MATCH (k:KEP {id: r.dst}) MERGE (p)-[:AUTHORED]->(k)
+```
+
+<!-- QUERIES:END -->
+
 ## AI usage
-See [AI_USAGE.md](AI_USAGE.md).
+
+This was built during the event with an AI coding assistant (Claude Code). See [AI_USAGE.md](AI_USAGE.md) for
+the running log and the assumptions it stated instead of asking.
+
+## Repository layout
+
+```
+ingest/   config.py, parse.py (pure), load.py (MERGE)       agent/  guard, templates, db, queries, bailiff,
+ui/       index.html, app.js, style.css (no build)                  router, llm, episodic, api
+scripts/  data_report, check_graph, lint_cypher, verdict_distribution, render_readme, wait_falkordb
+evals/    make_gold.py, run_eval.py, gold.json, results.json
+tests/    real kep.yaml fixtures; unit + live-graph integration tests
+```
