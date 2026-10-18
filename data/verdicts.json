@@ -1,0 +1,17 @@
+{
+  "data_hash": "b05225757231c20173ad98c1b5e031287ee3d52cab57633c61526b970235ac57",
+  "keps": 648,
+  "verdicts": {
+    "CLEAN": 339,
+    "AT_RISK": 187,
+    "HUMAN_GATE_REQUIRED": 122
+  },
+  "rules_fired": {
+    "CLEAN": 339,
+    "R2": 147,
+    "R1": 122,
+    "R4": 57,
+    "R3": 32
+  },
+  "seconds": 17.3
+}
