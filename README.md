@@ -186,10 +186,17 @@ Requirements: Docker, Python 3.11+, git, make.
 git clone https://github.com/Lucifer0000007/quorum && cd quorum
 make venv          # python3 -m venv .venv && pip install -r requirements.txt
 make up            # FalkorDB v4.22.1 on :6379 (Browser on :3000), waits for PING
-make clone-data    # shallow clone of kubernetes/enhancements into data/enhancements
+make clone-data    # kubernetes/enhancements at the pinned commit (CORPUS_COMMIT) into data/enhancements
 make ingest        # parse + idempotent MERGE into "company_brain" (about 2 s)
 make run           # http://127.0.0.1:8000
 ```
+
+The corpus is pinned to one upstream commit (the file `CORPUS_COMMIT`), so everyone gets the same data, the same data
+hash and the same numbers as this README, and the tests that name specific KEPs stay valid. For the latest upstream
+data use `make clone-data CORPUS_COMMIT=master` (the app and `make eval` work on any commit, but those tests and the
+README figures may then differ). We verified this setup from a fresh clone of the public repo: `make clone-data`,
+`make ingest` twice (same hash both times and the same hash as our working copy), `make check`, `make test`,
+`make lint` and `make eval`.
 
 Checks: `make test` (unit and live-graph integration tests), `make lint` (ruff and the Cypher lint),
 `make check` (graph ready, labels and edges present), `make eval`, `make report` (writes `data/report.json`),

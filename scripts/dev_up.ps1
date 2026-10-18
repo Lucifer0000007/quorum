@@ -41,8 +41,15 @@ if ($LASTEXITCODE -ne 0) { throw "FalkorDB did not answer PING on localhost:6379
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Graph missing or not ready; ingesting..."
     if (-not (Test-Path "data\enhancements\keps")) {
-        git clone --depth 1 -c core.longpaths=true https://github.com/kubernetes/enhancements data/enhancements
-        if ($LASTEXITCODE -ne 0) { throw "could not clone kubernetes/enhancements" }
+        # Pinned commit (CORPUS_COMMIT), same as `make clone-data`, so the data and README numbers match.
+        $commit = (Get-Content (Join-Path $root "CORPUS_COMMIT") -TotalCount 1).Trim()
+        git init -q data/enhancements
+        git -C data/enhancements config core.longpaths true
+        git -C data/enhancements remote add origin https://github.com/kubernetes/enhancements
+        git -C data/enhancements fetch -q --depth 1 origin $commit
+        if ($LASTEXITCODE -ne 0) { throw "could not fetch kubernetes/enhancements@$commit" }
+        git -C data/enhancements checkout -q FETCH_HEAD
+        if ($LASTEXITCODE -ne 0) { throw "could not check out the corpus" }
     }
     & $py -m ingest.load
     if ($LASTEXITCODE -ne 0) { throw "ingest failed" }

@@ -26,9 +26,17 @@ down:
 ping:
 	$(PY) scripts/wait_falkordb.py
 
+# The corpus is pinned (CORPUS_COMMIT) so everyone gets the same data, hash, README numbers and test expectations.
+# For the latest upstream instead: make clone-data CORPUS_COMMIT=master   (tests that name specific KEPs may then differ)
+CORPUS_URL ?= https://github.com/kubernetes/enhancements
+CORPUS_COMMIT ?= $(shell cat CORPUS_COMMIT)
+
 clone-data:
-	@if [ -d data/enhancements/.git ]; then echo "data/enhancements already cloned"; \
-	else git clone --depth 1 -c core.longpaths=true https://github.com/kubernetes/enhancements data/enhancements; fi
+	@if [ -d data/enhancements/.git ]; then echo "data/enhancements already cloned"; else \
+	git init -q data/enhancements && git -C data/enhancements config core.longpaths true && \
+	git -C data/enhancements remote add origin $(CORPUS_URL) && \
+	git -C data/enhancements fetch -q --depth 1 origin $(CORPUS_COMMIT) && \
+	git -C data/enhancements checkout -q FETCH_HEAD; fi
 	git -C data/enhancements rev-parse HEAD
 
 report:
