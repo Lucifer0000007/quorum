@@ -4,9 +4,9 @@ const $ = (id) => document.getElementById(id);
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const ACTIVE = new Set(["provisional", "implementable", "implemented"]);
 const VERDICT_TEXT = {
-  CLEAN: "No active KEP depends on it within three hops.",
-  AT_RISK: "Some active work or a stale dependency is in the path.",
-  HUMAN_GATE_REQUIRED: "Several SIGs are affected. A human has to approve the notice.",
+  CLEAN: "No active KEP is reachable from it via see-also or replaces within three hops.",
+  AT_RISK: "Active KEPs are reachable from it, or it references a stale KEP, or it has no recently active approver.",
+  HUMAN_GATE_REQUIRED: "Active KEPs owned by several SIGs are reachable from it. A human has to approve the notice.",
 };
 const EXAMPLES = [
   "Which SIG owns KEP-2221?",
@@ -126,7 +126,7 @@ function toolDetail(out) {
     case "who_knows_sig": return `${peopleTable(r.people)}<p class="meta">${esc(r.formula)}</p>`;
     case "is_still_valid":
       return (r.successors.length ? `<h3>Successors</h3>${r.successors.map((s) => `<p>KEP-${esc(s.id)} ${esc(s.title)} (${esc(s.status)})</p>`).join("")}` : "")
-        + (r.stale_ancestors.length ? `<h3>Depends on stale KEPs</h3>${r.stale_ancestors.map((s) => `<p>KEP-${esc(s.id)} ${esc(s.title)} (${esc(s.status)}) <span class="path">${esc(s.path.join(" → "))}</span></p>`).join("")}` : "");
+        + (r.stale_ancestors.length ? `<h3>References stale KEPs (via see-also)</h3>${r.stale_ancestors.map((s) => `<p>KEP-${esc(s.id)} ${esc(s.title)} (${esc(s.status)}) <span class="path">${esc(s.path.join(" → "))}</span></p>`).join("")}` : "");
     case "why":
       return `<table><tbody>${r.chain.map((c) => `<tr><td>${esc(c.step)}</td><td>${c.source ? `<a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.value)}</a>` : esc(c.value)}</td></tr>`).join("")}</tbody></table><p class="meta">${esc(r.note)}</p>`;
     case "kep_detail": {
@@ -157,6 +157,19 @@ function renderAnswer(out) {
   renderQueries(out.queries);
 }
 
+// One fired rule: its name, the query it was decided on, what it matched, and the exact Cypher (collapsed).
+function reasonItem(r) {
+  const label = (m) => (r.rule === "R4" ? "@" + m : /^\d+$/.test(m) ? "KEP-" + m : m);
+  const shown = (r.matched_ids || []).slice(0, 12).map(label).join(", ");
+  const more = (r.matched_ids || []).length > 12 ? ` and ${r.matched_ids.length - 12} more` : "";
+  return `<li>
+    <div><span class="rule">${esc(r.rule)}</span><b>${esc(r.rule_name)}</b>: ${esc(r.detail)}</div>
+    <div class="meta">decided on query <code>${esc(r.query)}</code>; matched ${shown ? esc(shown) + more : "nothing (no path found)"}</div>
+    <details><summary>Cypher for ${esc(r.rule)}</summary>
+      <pre>${esc(r.cypher)}</pre><pre class="params">${esc(JSON.stringify(r.params))}</pre></details>
+  </li>`;
+}
+
 function renderPreflight(out) {
   const n = out.staged_notice;
   const prior = out.prior_precedents || [];
@@ -170,7 +183,7 @@ function renderPreflight(out) {
     </div>
     <section class="panel">
       <h2>Why</h2>
-      <ul class="reasons">${out.reasons.map((r) => `<li><span class="rule">${esc(r.rule)}</span>${esc(r.detail)}${r.evidence.length ? `<div class="meta">${esc(r.evidence.slice(0, 12).join(", "))}</div>` : ""}</li>`).join("")}</ul>
+      <ul class="reasons">${out.reasons.map(reasonItem).join("")}</ul>
       <p class="meta">Rules: gate at ${out.rules.min_sigs_for_gate}+ SIGs, ${out.rules.hops} hops, recent means latest milestone ≥ v1.${out.rules.recent_min_minor}.</p>
     </section>
     <section class="panel">

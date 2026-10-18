@@ -69,7 +69,7 @@ LIMIT 100""",
     },
     "is_still_valid": {
         "graph": BRAIN,
-        "doc": "Status, successor chain, predecessors, and stale KEPs this KEP depends on via SEE_ALSO (3 hops).",
+        "doc": "Status, successor chain, predecessors, and stale KEPs it references via SEE_ALSO (3 hops).",
         "cypher": """
 MATCH (k:KEP {id: $kep_id})
 OPTIONAL MATCH sp = (k)<-[:REPLACES*1..5]-(s:KEP)

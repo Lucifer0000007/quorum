@@ -57,7 +57,7 @@ ui-smoke:
 
 # Verdict distribution over every KEP (data/verdicts.json) and regeneration of the README's numbers and Cypher.
 verdicts:
-	$(PY) -m scripts.verdict_distribution
+	$(PY) -m scripts.verdict_report
 
 readme:
 	$(PY) -m scripts.render_readme

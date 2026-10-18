@@ -143,7 +143,7 @@ def is_still_valid(kep_id: str) -> dict:
     elif status in STALE:
         verdict = f"not valid (status: {status})"
     elif status in ACTIVE:
-        verdict = "valid" if not stale else "valid, but depends on stale KEPs"
+        verdict = "valid" if not stale else "valid, but references stale KEPs via see-also"
     else:
         verdict = f"unknown (raw status: {row['status_raw']!r})"
     result = {"kep_id": kid, "title": row["title"], "status": status, "status_raw": row["status_raw"],

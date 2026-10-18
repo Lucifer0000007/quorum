@@ -149,6 +149,10 @@ button:disabled { opacity: 0.5; cursor: progress; }
 .reasons li { padding: 6px 0; border-top: 1px solid var(--rule); }
 .reasons li:first-child { border-top: 0; }
 .rule { font-weight: 800; margin-right: 8px; }
+.reasons code { font: 12px var(--mono); }
+.reasons details { margin-top: 4px; }
+.reasons summary { cursor: pointer; font-size: 13px; color: var(--focus); }
+.reasons pre { margin: 6px 0 0; padding: 8px 10px; background: var(--code-bg); font: 12px/1.5 var(--mono); overflow-x: auto; }
 
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th { text-align: left; font-weight: 600; color: var(--ink-soft); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--ink); }

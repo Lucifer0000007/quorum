@@ -1,0 +1,58 @@
+{
+  "data_hash": "32731b67d488d88eab9806365fa0dc0ea80ae23869e75cee0445f8492dd6a54c",
+  "hop_sensitivity": {
+    "1": {
+      "keps_with_reach": 272,
+      "verdicts": {
+        "AT_RISK": 261,
+        "CLEAN": 341,
+        "HUMAN_GATE_REQUIRED": 46
+      }
+    },
+    "2": {
+      "keps_with_reach": 272,
+      "verdicts": {
+        "AT_RISK": 221,
+        "CLEAN": 339,
+        "HUMAN_GATE_REQUIRED": 88
+      }
+    },
+    "3": {
+      "keps_with_reach": 272,
+      "verdicts": {
+        "AT_RISK": 187,
+        "CLEAN": 339,
+        "HUMAN_GATE_REQUIRED": 122
+      }
+    }
+  },
+  "hops": 3,
+  "kep_count": 648,
+  "largest_reach": 52,
+  "min_sigs_for_gate": 2,
+  "no_reach": 376,
+  "reach_capped": 0,
+  "reasons_have_evidence": {
+    "total": 703,
+    "with_evidence": 703
+  },
+  "rules_all_match": {
+    "CLEAN": 339,
+    "R1": 122,
+    "R2": 147,
+    "R3": 32,
+    "R4": 63
+  },
+  "rules_first_match": {
+    "CLEAN": 339,
+    "R1": 122,
+    "R2": 147,
+    "R3": 0,
+    "R4": 40
+  },
+  "verdicts": {
+    "AT_RISK": 187,
+    "CLEAN": 339,
+    "HUMAN_GATE_REQUIRED": 122
+  }
+}

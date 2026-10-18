@@ -33,7 +33,7 @@ shows the live values.
 1. In **Pick a KEP to supersede**, type `4381` (DRA Structured Parameters) and click **Simulate superseding it**.
 2. The verdict stamp reads **human gate required**. Read the reasons:
    - **R1:** 37 active KEPs across 6 SIGs within 3 hops.
-   - **R3:** it depends on KEP-3063, which was withdrawn.
+   - **R3:** it references KEP-3063, which was withdrawn, through see-also.
 3. Scroll the **Blast radius** table. Each row shows its graph path (e.g. `4815 -[SEE_ALSO]-> 4381`) and hop
    count. Say: "This is a variable-length traversal in FalkorDB, `REPLACES|SEE_ALSO*1..3`, in both directions."
 4. Quickly show the contrast: type `1020` and simulate. It comes back **clean**, with *"No path found"*. Say: "No path is a
