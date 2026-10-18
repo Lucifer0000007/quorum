@@ -1,0 +1,32 @@
+services:
+  falkordb:
+    # Pinned: C-engine line. (6.x is the new Rust engine; untested here.)
+    image: falkordb/falkordb:v4.22.1
+    ports:
+      - "6379:6379"   # FalkorDB (Redis protocol)
+      - "3000:3000"   # FalkorDB Browser
+    volumes:
+      - falkor-data:/var/lib/falkordb/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Optional: run the Quorum API in a container too (`docker compose --profile app up -d`).
+  app:
+    profiles: ["app"]
+    build: .
+    environment:
+      FALKORDB_HOST: falkordb
+      FALKORDB_PORT: "6379"
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    ports:
+      - "8000:8000"
+    depends_on:
+      falkordb:
+        condition: service_healthy
+
+volumes:
+  falkor-data:
