@@ -14,6 +14,7 @@ const EXAMPLES = [
   "Who knows about sig-scheduling?",
   "Which KEPs list KEP-1287 in see-also?",
   "Why does KEP-4381 exist?",
+  "Which KEPs are the most central?",
 ];
 let health = null;
 
@@ -55,20 +56,23 @@ async function loadHealth() {
   }
   const llm = health.llm || {};
   $("st-llm").innerHTML = llm.configured ? `language model (${esc(llm.model)})` : `keywords <span class="bad">(no API key set)</span>`;
+  $("router").options[0].textContent = llm.configured ? "Auto: language model" : "Auto: keywords";
   const ev = health.eval;
   $("st-eval").innerHTML = ev
     ? `${ev.passed}/${ev.total} correct (${(ev.rate * 100).toFixed(1)}%)${ev.stale ? ' <span class="bad">stale</span>' : ""}`
     : "not run yet";
 }
 
-function renderQueries(queries) {
+function renderQueries(queries, append = false) {
   if (!queries || !queries.length) return;
-  $("cypher").innerHTML = queries.map((q) => `
+  const html = queries.map((q) => `
     <article class="query">
       <header><b>${esc(q.name)}</b><span>${esc(q.graph)}, ${q.rows ?? "–"} rows, ${q.ms ?? "–"} ms</span></header>
       <pre>${esc(q.cypher)}</pre>
       <pre class="params">${esc(JSON.stringify(q.params))}</pre>
     </article>`).join("");
+  if (append) $("cypher").insertAdjacentHTML("beforeend", html);
+  else $("cypher").innerHTML = html;
 }
 
 function pathText(edges) {
@@ -108,6 +112,12 @@ function toolDetail(out) {
   const r = out.result;
   switch (out.tool) {
     case "blast_radius": return kepTable(r.reachable, true);
+    case "central_keps":
+      return `<table><thead><tr><th>KEP</th><th>Title</th><th>Status</th><th>Owning SIG</th><th>PageRank</th></tr></thead><tbody>
+        ${r.map((k) => `<tr><td><a href="${esc(k.source_url)}" target="_blank" rel="noopener">KEP-${esc(k.id)}</a></td>
+          <td>${esc(k.title)}</td><td>${statusPill(k.status)}</td><td>${esc(k.owning_sig)}</td>
+          <td class="num">${Number(k.score).toFixed(4)}</td></tr>`).join("")}</tbody></table>
+        <p class="meta">Computed by FalkorDB's algo.pageRank over see-also links between KEPs.</p>`;
     case "referrers": return kepTable(r.referrers, false);
     case "who_knows_kep":
     case "who_knows_sig": return `${peopleTable(r.people)}<p class="meta">${esc(r.formula)}</p>`;
@@ -135,7 +145,7 @@ function renderAnswer(out) {
   $("output").innerHTML = `
     <section class="panel">
       <p class="answer">${esc(out.summary)}</p>
-      <p class="meta">Tool ${esc(out.tool)} with ${esc(JSON.stringify(out.tool_params))}, routed by ${esc(out.router)}.</p>
+      <p class="meta">Tool ${esc(out.tool)}${Object.keys(out.tool_params).length ? " with " + esc(JSON.stringify(out.tool_params)) : ""}, routed by ${esc(out.router)}.</p>
       ${toolDetail(out)}
       ${out.path && out.path.length ? `<h3>Graph path</h3><p class="path">${esc(pathText(out.path.slice(0, 40)))}</p>` : ""}
       ${sources(out.source_links)}
@@ -183,7 +193,7 @@ function renderPreflight(out) {
     try {
       const a = await call("/approve", { notice_id: n.id, session_id: sessionId() });
       $("approved").innerHTML = `<span class="recorded">Precedent recorded</span> in ${esc(a.graph)} (id ${esc(a.precedent.id)}, ${esc(a.precedent.created_at)}). ${a.prior_precedents.length} precedent(s) now on record for KEP-${esc(n.kep_id)}. Posted externally: no.`;
-      renderQueries([{ name: "record_precedent (approval gate write)", graph: a.graph, cypher: a.cypher, params: a.params, rows: 1, ms: "–" }]);
+      renderQueries([{ name: "record_precedent (approval gate write)", graph: a.graph, cypher: a.cypher, params: a.params, rows: 1, ms: "–" }], true);
     } catch (e) { showError(e.message); ev.target.disabled = false; }
   };
   const s = $("summarize");
@@ -202,7 +212,7 @@ $("ask-form").addEventListener("submit", async (ev) => {
   const q = $("ask").value.trim();
   if (!q) return;
   showError(""); busy(ev.target, true);
-  try { renderAnswer(await call("/ask", { question: q, router: "auto" })); } catch (e) { showError(e.message); }
+  try { renderAnswer(await call("/ask", { question: q, router: $("router").value })); } catch (e) { showError(e.message); }
   busy(ev.target, false);
 });
 

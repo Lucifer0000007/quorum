@@ -9,8 +9,9 @@ DOCKER ?= docker
 # Machine-local overrides (gitignored), e.g. DOCKER := wsl -d Debian -u root -- docker
 -include local.mk
 
-.PHONY: venv up down ping clone-data report ingest test test-fast lint run eval check
+.PHONY: venv up down ping clone-data report ingest verdicts readme test test-fast ui-smoke lint run eval check
 
+# On Windows the `python3` name is often a Store stub: make venv PYTHON=python
 venv:
 	$(PYTHON) -m venv .venv
 	$(PY) -m pip install -q -r requirements.txt
@@ -41,6 +42,17 @@ test:
 
 test-fast:
 	$(PY) -m pytest -m "not integration" -x
+
+# Browser click-through on a throwaway server and graph. One-time: pip install -r requirements-dev.txt && playwright install chromium
+ui-smoke:
+	$(PY) -m scripts.ui_smoke
+
+# Verdict distribution over every KEP (data/verdicts.json) and regeneration of the README's numbers and Cypher.
+verdicts:
+	$(PY) -m scripts.verdict_distribution
+
+readme:
+	$(PY) -m scripts.render_readme
 
 lint:
 	$(PY) -m ruff check .

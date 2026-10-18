@@ -2,9 +2,13 @@ services:
   falkordb:
     # Pinned: C-engine line. (6.x is the new Rust engine; untested here.)
     image: falkordb/falkordb:v4.22.1
+    environment:
+      # Snapshot soon after any write, so an approved precedent survives an abrupt stop (the default is hourly).
+      REDIS_ARGS: "--save 15 1"
+    # Loopback only: the image runs Redis with --protected-mode no, so never publish these on all interfaces.
     ports:
-      - "6379:6379"   # FalkorDB (Redis protocol)
-      - "3000:3000"   # FalkorDB Browser
+      - "127.0.0.1:6379:6379"   # FalkorDB (Redis protocol)
+      - "127.0.0.1:3000:3000"   # FalkorDB Browser
     volumes:
       - falkor-data:/var/lib/falkordb/data
     restart: unless-stopped
@@ -23,7 +27,7 @@ services:
       FALKORDB_PORT: "6379"
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./data:/app/data   # corpus clone for `docker compose --profile app run --rm app python -m ingest.load`
     depends_on:

@@ -25,8 +25,11 @@ _load_dotenv()
 FALKORDB_HOST = os.environ.get("FALKORDB_HOST", "localhost")
 FALKORDB_PORT = int(os.environ.get("FALKORDB_PORT", "6379"))
 
-BRAIN_GRAPH = "company_brain"
-EPISODIC_GRAPH = "agent_episodic_memory"
+# Names are overridable so tests and smoke runs can use throwaway graphs instead of the demo's real ones.
+BRAIN_GRAPH = os.environ.get("QUORUM_BRAIN_GRAPH", "company_brain")
+EPISODIC_GRAPH = os.environ.get("QUORUM_EPISODIC_GRAPH", "agent_episodic_memory")
+if BRAIN_GRAPH == EPISODIC_GRAPH:
+    raise RuntimeError("QUORUM_BRAIN_GRAPH and QUORUM_EPISODIC_GRAPH must name different graphs.")
 
 REPO_TREE_URL = "https://github.com/kubernetes/enhancements/tree/master/"
 ISSUE_URL = "https://github.com/kubernetes/enhancements/issues/"

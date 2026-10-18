@@ -62,6 +62,9 @@ def render_stats() -> str:
             same = all(sim.get(k) == n for k, n in v.items())
             out.append("- Cross-check: a pure-Python re-implementation over the raw YAML predicts "
                        + ", ".join(f"{k} {n}" for k, n in sim.items()) + (" (identical)." if same else " (DIFFERS)."))
+            alt = rep["simulation"]["verdicts_min_sigs_3"]
+            out.append("- Threshold sensitivity: requiring 3 SIGs instead of 2 would gate "
+                       f"{alt.get('HUMAN_GATE_REQUIRED', 0)} KEPs instead of {sim.get('HUMAN_GATE_REQUIRED', 0)}.")
     if ev:
         out.append(f"- Eval: **{ev['passed']}/{ev['total']} ({ev['rate']:.1%})** questions answered correctly via the "
                    f"keyword router + live graph, run {ev['ran_at']} on data `{ev['data_hash'][:12]}`; by kind: "

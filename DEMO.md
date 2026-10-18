@@ -1,9 +1,19 @@
 # Quorum: 2-minute demo script
 
-**Setup before recording:** `make up && make ingest && make run`, then open http://127.0.0.1:8000. Optionally open the
-FalkorDB Browser on http://localhost:3000 in a second tab, on graph `company_brain`.
+**Setup before recording:** `make up && make ingest && make run`, then open http://127.0.0.1:8000. On Windows with
+Docker in WSL, run `powershell -ExecutionPolicy Bypass -File scripts\dev_up.ps1` instead and leave it open. Optionally
+open the FalkorDB Browser on http://localhost:3000 in a second tab, on graph `company_brain`.
 
-The header should show: graph ready, 648 KEPs, the router in use, and the eval score from `evals/results.json`.
+The header should show: graph ready, the KEP count, the router in use, and the eval score from `evals/results.json`.
+Close heavy browser tabs first: the app, FalkorDB and WSL together need a couple of GB free.
+
+**Start from a clean precedent store** so the "checked before" banner first appears after your own approval:
+the graph `agent_episodic_memory` should not exist yet (the tests and `make ui-smoke` use separate throwaway graphs).
+To reset it between takes: `wsl -d Debian -u root -- docker exec quorum-falkordb-1 redis-cli GRAPH.DELETE agent_episodic_memory`
+(with plain Docker: `docker exec quorum-falkordb-1 redis-cli GRAPH.DELETE agent_episodic_memory`).
+
+The figures below (for example "37 active KEPs across 6 SIGs") are what the pinned corpus commit produces; your screen
+shows the live values.
 
 ## 0:00–0:45 Ask the company brain
 

@@ -86,7 +86,7 @@ def eval_summary(data_hash: str | None) -> dict | None:
 
 @app.get("/health")
 def health():
-    out = {"llm": {"configured": llm.configured(), "model": llm.MODEL,
+    out = {"llm": {"configured": llm.configured(), "model": llm.model(),
                    "router": "llm available" if llm.configured() else "keyword router only (no ANTHROPIC_API_KEY)"},
            "posting": "disabled: Quorum never posts to GitHub or any external service"}
     try:
@@ -134,7 +134,7 @@ def ask(body: AskBody):
     use_llm = body.router == "llm" or (body.router == "auto" and llm.configured())
     if use_llm:
         tool, params = llm.choose_tool(body.question, TOOLS)  # LLMError -> 502, shown in the UI (no silent fallback)
-        router = f"llm ({llm.MODEL})"
+        router = f"llm ({llm.model()})"
     else:
         tool, params = keyword_route(body.question)
         router = "keyword" + ("" if llm.configured() else " (LLM not configured)")
@@ -196,7 +196,7 @@ def summarize_notice(body: NoticeBody):
     notice = STAGED.get(body.notice_id)
     if notice is None:
         return _err(404, "unknown_notice", LookupError("Unknown notice id; run the pre-flight check first."))
-    return {"summary": llm.summarize_notice(notice["markdown"]), "model": llm.MODEL,
+    return {"summary": llm.summarize_notice(notice["markdown"]), "model": llm.model(),
             "note": "LLM-phrased summary; checked to mention only KEPs, SIGs and people present in the notice."}
 
 

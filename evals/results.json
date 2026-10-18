@@ -2,12 +2,12 @@
   "passed": 38,
   "total": 38,
   "rate": 1.0,
-  "ran_at": "2026-10-18T14:26:35+00:00",
+  "ran_at": "2026-10-18T15:42:02+00:00",
   "data_hash": "32731b67d488d88eab9806365fa0dc0ea80ae23869e75cee0445f8492dd6a54c",
   "gold_source_commit": "5b503a75369bdfdd494a2c2c72107a41bf6dd1a8",
   "graph_source_commit": "5b503a75369bdfdd494a2c2c72107a41bf6dd1a8",
   "router": "keyword (deterministic)",
-  "seconds": 0.35,
+  "seconds": 2.45,
   "by_kind": {
     "approvers": {
       "passed": 5,

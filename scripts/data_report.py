@@ -8,9 +8,8 @@ from collections import Counter, defaultdict
 
 from ingest.config import DATA_DIR, ENHANCEMENTS_DIR
 from ingest.load import source_commit
-from ingest.parse import ACTIVE, STALE, build_rows, parse_corpus
+from ingest.parse import ACTIVE, RECENT_WINDOW, STALE, build_rows, parse_corpus
 
-RECENT_WINDOW = 3  # minors below the corpus max that still count as "recent" (documented in README)
 FIELDS = {
     "title": "title", "kep-number": "number_raw", "authors": "authors", "owning-sig": "owning_sig",
     "participating-sigs": "participating_sigs", "status": "status_raw", "creation-date": "creation_date",

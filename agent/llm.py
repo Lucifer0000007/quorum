@@ -8,7 +8,7 @@ from __future__ import annotations
 import os
 import re
 
-MODEL = os.environ.get("QUORUM_LLM_MODEL", "claude-opus-5-5")
+from ingest import config as _config  # noqa: F401  (importing it loads .env before the key and model are read)
 
 SYSTEM = (
     "You route questions about Kubernetes Enhancement Proposals (KEPs) to exactly one tool. "
@@ -19,6 +19,10 @@ SYSTEM = (
 
 class LLMError(RuntimeError):
     pass
+
+
+def model() -> str:
+    return os.environ.get("QUORUM_LLM_MODEL", "claude-opus-5-5")
 
 
 def configured() -> bool:
@@ -35,13 +39,13 @@ def _client():
 
 def _tool_defs(tools: dict) -> list[dict]:
     defs = []
-    for name, (model, _fn, doc) in tools.items():
-        schema = model.model_json_schema()
+    for name, (params_model, _fn, doc) in tools.items():
+        schema = params_model.model_json_schema()
         defs.append({
             "name": name,
             "description": doc,
             "strict": True,
-            "input_schema": {"type": "object", "properties": schema["properties"],
+            "input_schema": {"type": "object", "properties": schema.get("properties", {}),
                              "required": schema.get("required", []), "additionalProperties": False},
         })
     return defs
@@ -53,7 +57,7 @@ def choose_tool(question: str, tools: dict) -> tuple[str, dict]:
 
     try:
         resp = _client().beta.messages.create(
-            model=MODEL,
+            model=model(),
             max_tokens=2000,
             betas=["server-side-fallback-2026-07-01"],
             fallbacks="default",
@@ -82,7 +86,7 @@ def summarize_notice(markdown: str) -> str:
 
     try:
         resp = _client().messages.create(
-            model=MODEL,
+            model=model(),
             max_tokens=2000,
             output_config={"effort": "low"},
             system="Summarize the impact notice in at most 3 sentences for the affected SIG leads. Use only facts "

@@ -30,8 +30,9 @@ def decide(facts: dict) -> dict:
                         "detail": f"{len(affected)} active KEPs across {len(sigs)} SIGs are within 3 hops",
                         "evidence": sigs})
     elif affected:
+        owner = sigs[0] if sigs else "a KEP with no owning SIG listed"
         reasons.append({"rule": "R2", "effect": "AT_RISK",
-                        "detail": f"{len(affected)} active KEPs within 3 hops, all owned by {sigs[0]}",
+                        "detail": f"{len(affected)} active KEPs within 3 hops, all owned by {owner}",
                         "evidence": [a["id"] for a in affected]})
     if facts["stale_ancestors"]:
         reasons.append({"rule": "R3", "effect": "AT_RISK",
@@ -118,8 +119,13 @@ def preflight(kep_id: str, action: str = "supersede") -> dict:
     verdict = decide(facts)
     suggested = [p for p in reviewers["result"]["people"]]
     notice = _notice(kep, verdict, facts, suggested, m["data_hash"], action)
-    queries_run = (detail["queries"] + blast["queries"][1:] + validity["queries"][1:]
-                   + [q._q(recent_run)] + reviewers["queries"][1:] + precedents["queries"])
+    queries_run, seen = [], set()  # every distinct query that ran, once each (tools share resolve/detail lookups)
+    for run in (detail["queries"] + blast["queries"] + validity["queries"] + [q._q(recent_run)]
+                + reviewers["queries"] + precedents["queries"]):
+        key = (run["name"], json.dumps(run["params"], sort_keys=True))
+        if key not in seen:
+            seen.add(key)
+            queries_run.append(run)
     return {
         "tool": "preflight",
         "action": action,

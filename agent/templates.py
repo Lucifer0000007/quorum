@@ -190,7 +190,8 @@ LIMIT 100""",
         "doc": "Most central KEPs by PageRank over SEE_ALSO (FalkorDB algorithm procedure).",
         "cypher": """
 CALL algo.pageRank('KEP', 'SEE_ALSO') YIELD node, score
-RETURN node.id AS id, node.title AS title, node.owning_sig AS owning_sig, score
+RETURN node.id AS id, node.title AS title, node.status AS status, node.owning_sig AS owning_sig,
+       node.source_url AS source_url, score
 ORDER BY score DESC
 LIMIT $limit""",
     },

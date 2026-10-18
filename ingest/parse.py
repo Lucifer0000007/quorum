@@ -17,6 +17,9 @@ from ingest.config import ISSUE_URL, REPO_TREE_URL
 
 ACTIVE = ("provisional", "implementable", "implemented")
 STALE = ("replaced", "rejected", "withdrawn", "deferred")
+# "Recent" = latest-milestone minor within this many minors of the newest minor in the corpus (computed at ingest).
+# Single source of truth: the bailiff, who_knows and scripts/data_report.py all import it from here.
+RECENT_WINDOW = 3
 # Explicit, logged fixes for values seen in the real corpus (raw value is kept in status_raw).
 STATUS_ALIASES = {"imlpemented": "implemented", "superseded": "replaced", "removed": "withdrawn"}
 

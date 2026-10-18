@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from agent import queries as q
 from agent.bailiff import preflight
@@ -16,7 +16,17 @@ from agent.bailiff import preflight
 KEP_ID = r"^(?:\d{1,5}|[a-z0-9-]+/[a-z0-9.-]+)$"
 
 
-class KepParams(BaseModel):
+class Params(BaseModel):
+    """Typed tool parameters. Unknown fields are rejected, so the model can't smuggle anything extra in."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class NoParams(Params):
+    pass
+
+
+class KepParams(Params):
     kep_id: str = Field(description="KEP number, e.g. '1287' (no 'KEP-' prefix needed)")
 
     @field_validator("kep_id")
@@ -30,7 +40,7 @@ class KepParams(BaseModel):
         return v
 
 
-class SigParams(BaseModel):
+class SigParams(Params):
     sig: str = Field(description="SIG name, e.g. 'sig-node'")
 
     @field_validator("sig")
@@ -54,6 +64,8 @@ TOOLS = {
     "referrers": (KepParams, lambda p: q.referrers(p.kep_id), "KEPs that list this KEP in see-also."),
     "sig_overview": (SigParams, lambda p: q.sig_overview(p.sig), "How many KEPs a SIG owns."),
     "preflight": (KepParams, lambda p: preflight(p.kep_id), "Simulate superseding a KEP: deterministic verdict."),
+    "central_keps": (NoParams, lambda p: q.central_keps(10),
+                     "Most central KEPs by PageRank over see-also links (FalkorDB algorithm)."),
 }
 
 
@@ -102,6 +114,9 @@ def keyword_route(question: str) -> tuple[str, dict]:
         if sig:
             return "who_knows_sig", {"sig": sig}
         raise RoutingError("who_knows needs a KEP number or a SIG name (e.g. sig-node)")
+    central = r"central|important|influential|\bhubs?\b|pagerank|most (referenced|linked|connected)"
+    if not kep and re.search(central, text):
+        return "central_keps", {}
     if re.search(r"see[- ]also|list kep|refer|cite", text):
         return need_kep("referrers")
     if re.search(r"successor|superseded|still valid|is .* valid|replaced by|obsolete|stale", text):
@@ -151,4 +166,7 @@ def summarize(tool: str, out: dict) -> str:
         return f"{r['sig']} owns {r['owned']} KEPs ({int(r['active'])} active)."
     if tool == "preflight":
         return f"Verdict for superseding KEP-{out['kep']['id']}: {out['verdict']}."
+    if tool == "central_keps":
+        top = ", ".join(f"KEP-{k['id']} ({k['owning_sig']})" for k in r[:5])
+        return f"Most central KEPs by PageRank over see-also links: {top}."
     return ""

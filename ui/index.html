@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Quorum</title>
+  <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="/ui/style.css">
@@ -29,6 +30,10 @@
         <div class="row">
           <input id="ask" name="ask" autocomplete="off"
                  placeholder="Who knows about sig-scheduling?  ·  Does KEP-2377 have a successor?">
+          <select id="router" aria-label="How to read the question">
+            <option value="auto">Auto</option>
+            <option value="keyword">Keywords only</option>
+          </select>
           <button type="submit">Ask</button>
         </div>
         <p class="examples" id="examples"></p>

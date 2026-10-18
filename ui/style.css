@@ -62,6 +62,13 @@ a { color: var(--focus); text-underline-offset: 2px; }
 }
 .console label { display: block; font-weight: 600; margin-bottom: 6px; }
 .row { display: flex; gap: 8px; }
+select {
+  font: inherit;
+  padding: 9px 8px;
+  border: 1px solid var(--rule);
+  background: #fff;
+  color: var(--ink);
+}
 input {
   flex: 1;
   min-width: 0;
@@ -143,6 +150,7 @@ button:disabled { opacity: 0.5; cursor: progress; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th { text-align: left; font-weight: 600; color: var(--ink-soft); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--ink); }
 td { padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+td:first-child { white-space: nowrap; }
 td.num { font-variant-numeric: tabular-nums; text-align: right; }
 .status-pill { font-size: 12px; font-weight: 600; }
 .status-pill.active { color: var(--clean); }

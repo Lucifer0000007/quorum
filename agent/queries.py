@@ -6,9 +6,8 @@ Each returns {tool, result, cypher, params, source_links, path, queries}, built 
 from __future__ import annotations
 
 from agent.db import meta, run_ro
-from ingest.parse import ACTIVE, STALE
+from ingest.parse import ACTIVE, RECENT_WINDOW, STALE
 
-RECENT_WINDOW = 3  # a KEP is "recent" if latest-milestone minor >= corpus max minor - 3 (max is computed at ingest)
 WHO_KNOWS_FORMULA = (
     "score(person) = sum over each (role, KEP) pair in scope, role in {AUTHORED, REVIEWED, APPROVED}, of "
     "w(KEP), where w = 2 if the KEP's latest-milestone minor >= {threshold} (corpus max v1.{max} minus "
@@ -248,7 +247,8 @@ def list_sigs() -> dict:
 
 def central_keps(limit: int = 10) -> dict:
     run = run_ro("central_keps", {"limit": max(1, min(int(limit), 100))})
-    return _result("central_keps", run["rows"], [_q(run)], [], [])
+    links = [{"label": f"KEP-{r['id']}", "url": r["source_url"]} for r in run["rows"]]
+    return _result("central_keps", run["rows"], [_q(run)], links, [])
 
 
 def prior_precedents(kep_id: str) -> dict:

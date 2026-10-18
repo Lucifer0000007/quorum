@@ -38,7 +38,13 @@ Graph `agent_episodic_memory` (written only by the approval gate):
 - `(Session)-[:CHECKED]->(Precedent)`, `(Precedent)-[:ABOUT]->(KEPRef)`
 
 ## Layout & commands
-- `ingest/` parse (pure) + load (MERGE). `agent/` guard, queries, bailiff, router, api. `ui/` static SPA.
-- `make up | clone-data | ingest | test | test-fast | lint | run | eval | check`
-- Local machine: FalkorDB runs in Docker inside WSL Debian (`local.mk` sets `DOCKER`).
+- `ingest/` config, parse (pure), load (MERGE). `agent/` guard, templates, db, queries, bailiff, router, llm,
+  episodic (the only write path), api. `ui/` static SPA. `scripts/`, `evals/`, `tests/` (real kep.yaml fixtures).
+- `make up | clone-data | ingest | test | test-fast | lint | run | eval | check | report | verdicts | readme | ui-smoke`
+- Local machine: FalkorDB runs in Docker inside WSL Debian (`local.mk` sets `DOCKER`); `scripts/dev_up.ps1` starts
+  everything (WSL idles out and takes Docker with it, so it keeps one session alive).
 - Python venv: `.venv` (Python 3.12). Tests marked `integration` need the live graph.
+- Tests and `make ui-smoke` must never write to the demo's episodic graph: `tests/conftest.py` sets
+  `QUORUM_EPISODIC_GRAPH` to a throwaway name (`QUORUM_BRAIN_GRAPH` exists too). Keep it that way.
+- README numbers and Cypher are generated (`make readme`); don't hand-type counts into prose.
+- Write files as UTF-8 explicitly on Windows (`encoding="utf-8"`); the default codec is cp1252.

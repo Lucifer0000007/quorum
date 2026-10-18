@@ -12,8 +12,9 @@ validated parameters and (2) format a staged notice. Verdicts never come from th
 
 ### 1. Phase 0: setup (18 Oct, ~19:25 IST)
 - Assistant explored the machine and the corpus before coding: streamed the `kubernetes/enhancements`
-  master tarball in memory to measure field coverage (646 kep.yaml; see-also/replaces resolvability,
-  dirty status values, duplicate kep-numbers, invalid dates). These numbers drove the parser design.
+  master tarball in memory to measure field coverage (646 of 648 kep.yaml parsed with PyYAML's default loader;
+  see-also/replaces resolvability, dirty status values, duplicate kep-numbers, invalid dates). The 2 failures
+  and the other numbers drove the parser design (`yaml.BaseLoader`).
 - Generated: repo skeleton, docker-compose (FalkorDB pinned `v4.22.1`), Makefile, CLAUDE.md, this file,
   README skeleton, `.mcp.json`, subagent definitions, post-edit hook.
 
@@ -27,14 +28,17 @@ validated parameters and (2) format a staged notice. Verdicts never come from th
 - The assistant wrote the guard, the 16 read-only templates, the RO runner and the query tools.
 - It probed FalkorDB 4.22 Cypher support live before writing templates: pattern comprehension,
   `properties()`, path functions, `algo.pageRank`. It also confirmed that `RO_QUERY` rejects writes.
-- An **eval-agent subagent** wrote `evals/make_gold.py`, an independent YAML-only gold generator, and its tests.
-- A **cypher-reviewer subagent** audited the templates against the live graph. It recomputed the blast radius
-  for all 647 numbered KEPs with its own BFS (exact match) and reported 7 issues, all fixed:
-  - duplicate stale-ancestor and successor rows
-  - unknown SIGs returning zeros instead of 404
-  - GitHub team aliases (e.g. `@sig-node-tech-leads`) counted as people
-  - Cypher runs missing from the evidence panel
-  - float scores
+- Two **subagents** did independent work. They were general-purpose agents told to follow
+  `.claude/agents/eval-agent.md` and `.claude/agents/cypher-reviewer.md`, because Claude Code only loads
+  project-defined agents at session start (the definitions are in the repo and will work from the next session).
+  - The eval agent wrote `evals/make_gold.py`, an independent YAML-only gold generator, and its tests.
+  - The reviewer audited the templates against the live graph. It recomputed the blast radius for every KEP with
+    a unique number using its own BFS (exact match) and reported 7 issues, all fixed:
+    - duplicate stale-ancestor and successor rows
+    - unknown SIGs returning zeros instead of 404
+    - GitHub team aliases (e.g. `@sig-node-tech-leads`) counted as people
+    - Cypher runs missing from the evidence panel
+    - float scores
 
 ### 4. Phase 3: bailiff
 - The assistant wrote the deterministic rules R1–R4 and the approval-gate write path.
@@ -54,9 +58,30 @@ validated parameters and (2) format a staged notice. Verdicts never come from th
 
 ### 6. Phases 5–6: eval and ship
 - The assistant wrote `evals/run_eval.py`, which runs each question through the router and the live graph.
-- The eval-agent added blast-radius-count and approver questions, making 38 in total.
+- The eval subagent added blast-radius-count and approver questions, making 38 in total.
 - The README's numbers and Cypher sections are generated from data and code by `scripts/render_readme.py`.
 - It also wrote the Dockerfile and DEMO.md.
+
+### 7. Hardening pass (same day; the session's model was switched from Opus 5.5 to Sonnet 5.5 for this part)
+Prompted by the dev machine running low on memory, which stopped the local server and the WSL keepalive. The
+assistant then re-checked its own earlier work and fixed what it found:
+- **Test pollution:** integration tests were writing precedents into the demo's real episodic graph. Graph names
+  are now overridable (`QUORUM_BRAIN_GRAPH`, `QUORUM_EPISODIC_GRAPH`), the test session and `make ui-smoke` use
+  throwaway graphs, and the polluted demo graph (only `test-*` and click-through sessions) was deleted after
+  inspecting it.
+- **LLM path:** the model name was read before `.env` was loaded. Now lazy. Added tests that run the real
+  Anthropic SDK against a local stub server (request shape, refusal, API error, invalid parameters, invented
+  entities). It has still never talked to the real API.
+- **Bailiff:** crash if an active KEP had no owning SIG; duplicate queries in the evidence panel.
+- **Single source of truth** for the "recent" window (it was defined in two places).
+- **PageRank** (`algo.pageRank`) is now reachable from the Ask box and UI, not only a bare endpoint.
+- **Local security:** FalkorDB's image runs Redis with `--protected-mode no`; compose now publishes ports on
+  127.0.0.1 only and snapshots 15 s after a write so an approved precedent survives an abrupt stop.
+- **Reproducibility:** `scripts/dev_up.ps1` (one-command Windows start), `scripts/ui_smoke.py` (17 browser
+  assertions), a clean-clone verification of the README setup, README prose that hardcoded counts now defers to
+  generated numbers.
+- **A correction to the assistant's own earlier report:** it said the graph had 5,526 edges; the real number is
+  5,726 (`Meta.edge_count`, and the sum of the per-type counts).
 
 ### Assumptions (stated instead of asking)
 - **Docker:** not installed on the dev Windows machine (no admin), so FalkorDB runs in Docker Engine
