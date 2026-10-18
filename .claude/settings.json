@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python scripts/hooks/post_edit.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/hooks/post_edit.py\"",
             "timeout": 120
           }
         ]

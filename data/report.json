@@ -1,0 +1,262 @@
+{
+  "source_commit": "5b503a75369bdfdd494a2c2c72107a41bf6dd1a8",
+  "data_hash": "b05225757231c20173ad98c1b5e031287ee3d52cab57633c61526b970235ac57",
+  "kep_yaml_files": 648,
+  "parse_failures": [],
+  "keps": 648,
+  "fields_non_empty": {
+    "title": 648,
+    "kep-number": 648,
+    "authors": 648,
+    "owning-sig": 648,
+    "participating-sigs": 402,
+    "status": 648,
+    "creation-date": 645,
+    "reviewers": 628,
+    "approvers": 632,
+    "prr-approvers": 0,
+    "see-also": 371,
+    "replaces": 180,
+    "superseded-by": 52,
+    "stage": 607,
+    "latest-milestone": 608
+  },
+  "status_counts": {
+    "implemented": 298,
+    "implementable": 276,
+    "provisional": 51,
+    "withdrawn": 12,
+    "replaced": 6,
+    "rejected": 3,
+    "deferred": 1,
+    "unknown": 1
+  },
+  "status_normalizations": {
+    "'superseded' -> replaced": 1,
+    "'provisional|implementable|implemented|deferred|rejected|withdrawn|replaced' -> unknown": 1,
+    "'implemented (alpha)' -> implemented": 1,
+    "'imlpemented' -> implemented": 1,
+    "'removed' -> withdrawn": 1
+  },
+  "stale_keps": [
+    "2229",
+    "2451",
+    "2558",
+    "2593",
+    "2699",
+    "2718",
+    "281",
+    "2924",
+    "2943",
+    "3037",
+    "3063",
+    "3130",
+    "3156",
+    "3503",
+    "4153",
+    "4706",
+    "5339",
+    "536",
+    "5978",
+    "600",
+    "960",
+    "sig-cloud-provider/2133-out-of-tree-credential-provider"
+  ],
+  "ref_stats": {
+    "folder_sig_differs_from_owning_sig": 8,
+    "ids_from_duplicate_number": 2,
+    "ids_without_valid_number": 3,
+    "keps": 648,
+    "no_approvers": 16,
+    "no_reviewers": 20,
+    "replaces_placeholder": 151,
+    "replaces_resolved": 8,
+    "replaces_unresolved": 24,
+    "see_also_placeholder": 100,
+    "see_also_resolved": 314,
+    "see_also_self_reference": 2,
+    "see_also_unresolved": 141,
+    "skipped_handles": 42,
+    "status_normalized": 5,
+    "superseded_by_placeholder": 51,
+    "superseded_by_resolved": 1
+  },
+  "edge_counts": {
+    "AUTHORED": 1100,
+    "REVIEWED": 1841,
+    "APPROVED": 1216,
+    "OWNED_BY": 648,
+    "PARTICIPATES": 615,
+    "SEE_ALSO": 314,
+    "REPLACES": 9
+  },
+  "sigs": [
+    "committee-security-response",
+    "kubelet garbage collection wg",
+    "sig-api-machinery",
+    "sig-apps",
+    "sig-architecture",
+    "sig-auth",
+    "sig-autoscaling",
+    "sig-cli",
+    "sig-cloud-provider",
+    "sig-cluster-lifecycle",
+    "sig-contributor-experience",
+    "sig-docs",
+    "sig-etcd",
+    "sig-instrumentation",
+    "sig-jobset",
+    "sig-k8s-infra",
+    "sig-multicluster",
+    "sig-network",
+    "sig-node",
+    "sig-release",
+    "sig-scalability",
+    "sig-scheduling",
+    "sig-security",
+    "sig-service-catalog",
+    "sig-storage",
+    "sig-testing",
+    "sig-ui",
+    "sig-usability",
+    "sig-windows",
+    "wg-component-standard",
+    "wg-lts",
+    "wg-multitenancy"
+  ],
+  "people": 700,
+  "latest_minor_range": [
+    9,
+    38
+  ],
+  "recent_threshold_minor": 35,
+  "keps_without_latest_milestone": 115,
+  "simulation": {
+    "recent_people": 315,
+    "keps_with_no_recent_approver": 57,
+    "keps_with_stale_ancestors": 32,
+    "verdicts_min_sigs_2": {
+      "AT_RISK": 187,
+      "CLEAN": 339,
+      "HUMAN_GATE_REQUIRED": 122
+    },
+    "verdicts_min_sigs_3": {
+      "AT_RISK": 247,
+      "CLEAN": 339,
+      "HUMAN_GATE_REQUIRED": 62
+    },
+    "examples_min_sigs_2": {
+      "HUMAN_GATE_REQUIRED": [
+        {
+          "id": "3573",
+          "affected": 51,
+          "sigs": 7,
+          "stale_ancestors": 0,
+          "no_recent_approver": false
+        },
+        {
+          "id": "4680",
+          "affected": 49,
+          "sigs": 7,
+          "stale_ancestors": 1,
+          "no_recent_approver": false
+        },
+        {
+          "id": "1287",
+          "affected": 42,
+          "sigs": 7,
+          "stale_ancestors": 0,
+          "no_recent_approver": false
+        },
+        {
+          "id": "5710",
+          "affected": 42,
+          "sigs": 6,
+          "stale_ancestors": 0,
+          "no_recent_approver": false
+        },
+        {
+          "id": "3063",
+          "affected": 40,
+          "sigs": 6,
+          "stale_ancestors": 0,
+          "no_recent_approver": false
+        }
+      ],
+      "AT_RISK": [
+        {
+          "id": "5468",
+          "affected": 12,
+          "sigs": 1,
+          "stale_ancestors": 1,
+          "no_recent_approver": false
+        },
+        {
+          "id": "3327",
+          "affected": 9,
+          "sigs": 1,
+          "stale_ancestors": 0,
+          "no_recent_approver": false
+        },
+        {
+          "id": "624",
+          "affected": 9,
+          "sigs": 1,
+          "stale_ancestors": 0,
+          "no_recent_approver": false
+        },
+        {
+          "id": "1451",
+          "affected": 8,
+          "sigs": 1,
+          "stale_ancestors": 0,
+          "no_recent_approver": true
+        },
+        {
+          "id": "2891",
+          "affected": 7,
+          "sigs": 1,
+          "stale_ancestors": 0,
+          "no_recent_approver": false
+        }
+      ],
+      "CLEAN": [
+        {
+          "id": "1020",
+          "affected": 0,
+          "sigs": 0,
+          "stale_ancestors": 0,
+          "no_recent_approver": false
+        },
+        {
+          "id": "1024",
+          "affected": 0,
+          "sigs": 0,
+          "stale_ancestors": 0,
+          "no_recent_approver": false
+        },
+        {
+          "id": "1027",
+          "affected": 0,
+          "sigs": 0,
+          "stale_ancestors": 0,
+          "no_recent_approver": false
+        },
+        {
+          "id": "1029",
+          "affected": 0,
+          "sigs": 0,
+          "stale_ancestors": 0,
+          "no_recent_approver": false
+        },
+        {
+          "id": "1040",
+          "affected": 0,
+          "sigs": 0,
+          "stale_ancestors": 0,
+          "no_recent_approver": false
+        }
+      ]
+    }
+  }
+}
