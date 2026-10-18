@@ -1,6 +1,6 @@
 # Quorum status
 
-This file was generated on 2026-10-18 17:11 UTC by `python -m scripts.render_status` (`make status`). Every figure below was read from the live system when it was generated, and each is followed by the command that reproduces it. Nothing here is typed by hand.
+This file was generated on 2026-10-18 17:30 UTC by `python -m scripts.render_status` (`make status`). Every figure below was read from the live system when it was generated, and each is followed by the command that reproduces it. Nothing here is typed by hand.
 
 ## What `scripts/dev_up.ps1` does
 
@@ -8,7 +8,7 @@ It is an optional helper for a Windows machine where Docker runs inside WSL2, wh
 
 ## Phase 0 facts, as they stand now
 
-FalkorDB answers PING: `PING localhost:6379 -> PONG; modules=['graph@42201', 'vectorset@1']` (reproduce with `python scripts/wait_falkordb.py`). The test suite reports `207 passed in 85.60s (0:01:25)` (reproduce with `python -m pytest -o addopts= -q`). Ruff reports `All checks passed!` (`python -m ruff check .`), and the Cypher lint reports `OK: 16 templates are read-only and LIMIT-capped; no write paths outside episodic.py` (`python -m scripts.lint_cypher`). At the end of Phase 0 the same checks gave a PONG with the graph module loaded, one passing smoke test and a clean ruff run; the suite has grown since.
+FalkorDB answers PING: `PING localhost:6379 -> PONG; modules=['graph@42201', 'vectorset@1']` (reproduce with `python scripts/wait_falkordb.py`). The test suite reports `209 passed in 91.82s (0:01:31)` (reproduce with `python -m pytest -o addopts= -q`). Ruff reports `All checks passed!` (`python -m ruff check .`), and the Cypher lint reports `OK: 16 templates are read-only and LIMIT-capped; no write paths outside episodic.py` (`python -m scripts.lint_cypher`). At the end of Phase 0 the same checks gave a PONG with the graph module loaded, one passing smoke test and a clean ruff run; the suite has grown since.
 
 ## The live graph
 

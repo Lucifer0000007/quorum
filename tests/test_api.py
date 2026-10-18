@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 from agent import llm
 from agent.api import app
 from ingest import config
-from tests.conftest import STUB_MODEL
+from tests.conftest import STUB_KEY, STUB_MODEL
 
 pytestmark = pytest.mark.integration
 client = TestClient(app)
@@ -164,12 +164,31 @@ def test_missing_tool_calling_falls_back_to_keywords_loudly_and_turns_the_llm_of
     assert health["mode"] == "keywords" and "does not support tool calling" in health["reason"]
 
 
-def test_rate_limit_is_reported_as_rate_limited(stub_llm):
+def test_auto_falls_back_loudly_when_rate_limited_but_keeps_the_llm_on(stub_llm):
     write_passing_smoke()
     for _ in range(3):
         stub_llm.reply_error(429, "Rate limit exceeded")
-    r = client.post("/ask", json={"question": "Which SIG owns KEP-2221?", "router": "auto"})
+    r = client.post("/ask", json={"question": "Which SIG owns KEP-2221?", "router": "auto"}).json()
+    assert r["router"] == "keywords" and "rate limited" in r["router_note"] and r["tool"] == "kep_detail"
+    assert client.get("/health").json()["llm"]["mode"] == "llm"  # transient: the LLM stays on for the next question
+
+
+def test_explicit_llm_choice_gets_the_rate_limit_error_not_a_substitute(stub_llm):
+    write_passing_smoke()
+    for _ in range(3):
+        stub_llm.reply_error(429, "Rate limit exceeded")
+    r = client.post("/ask", json={"question": "Which SIG owns KEP-2221?", "router": "llm"})
     assert r.status_code == 429 and r.json()["error"] == "rate_limited"
+
+
+def test_rejected_credentials_turn_the_llm_off_loudly_instead_of_breaking_the_ask_box(stub_llm):
+    write_passing_smoke()  # e.g. the key was rotated after a good smoke test
+    stub_llm.reply_error(401, "Invalid API key")
+    r = client.post("/ask", json={"question": "Which SIG owns KEP-2221?", "router": "auto"}).json()
+    assert r["router"] == "keywords" and "rejected the credentials" in r["router_note"]
+    assert r["tool"] == "kep_detail" and STUB_KEY not in json.dumps(r)
+    health = client.get("/health").json()["llm"]
+    assert health["mode"] == "keywords" and "rejected the credentials" in health["reason"]
 
 
 def test_summarize_is_refused_while_the_llm_is_off(stub_llm):

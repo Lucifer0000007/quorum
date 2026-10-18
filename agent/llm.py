@@ -64,6 +64,10 @@ class RateLimited(LLMError):
     """HTTP 429 persisted through the short retry."""
 
 
+class AuthRejected(LLMError):
+    """The provider rejected the credentials (HTTP 401 or 403), e.g. after the key was rotated."""
+
+
 class ToolCallingUnsupported(LLMError):
     """The configured model/endpoint does not support tool calling."""
 
@@ -202,9 +206,10 @@ def _complete(**kwargs):
                 continue
             raise RateLimited(
                 f"rate limited by {provider()} (HTTP 429) after {attempts} attempts: {_message(exc)}") from exc
-        except openai.AuthenticationError as exc:
-            raise LLMError(
-                f"{provider()} rejected the credentials (HTTP 401): check LLM_API_KEY. {_message(exc)}") from exc
+        except (openai.AuthenticationError, openai.PermissionDeniedError) as exc:
+            raise AuthRejected(
+                f"{provider()} rejected the credentials (HTTP {exc.status_code}): check LLM_API_KEY. "
+                f"{_message(exc)}") from exc
         except openai.APIStatusError as exc:
             msg = _message(exc)
             if exc.status_code in (400, 404, 422) and _UNSUPPORTED.search(msg):

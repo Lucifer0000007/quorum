@@ -158,9 +158,13 @@ def ask(body: AskBody):
         try:
             tool, params = llm.choose_tool(body.question, TOOLS)  # LLMError -> 502, RateLimited -> 429 (no silent swap)
             router, detail = "llm", f"LLM ({st['provider']} / {st['model']})"
-        except llm.ToolCallingUnsupported as exc:
+        except (llm.ToolCallingUnsupported, llm.AuthRejected) as exc:
             llm.disable(str(exc))  # loud, once: the UI header switches to Keywords only with this reason
             note = f"The LLM is off for this session: {llm.scrub(exc)} Answered by the keyword router instead."
+        except llm.RateLimited as exc:
+            if body.router == "llm":
+                raise  # an explicit choice of the LLM gets the error (HTTP 429), not a substitute
+            note = f"The LLM is rate limited, so this question was answered by the keyword router. {llm.scrub(exc)}"
     if tool is None:
         tool, params = keyword_route(body.question)
     out = dispatch(tool, params)

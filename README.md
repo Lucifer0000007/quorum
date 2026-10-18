@@ -270,7 +270,8 @@ recent and `1` otherwise. Scope is the KEP plus its 2-hop neighborhood, or a SIG
 **Requirements.** Docker Engine or Docker Desktop with the Compose v2 plugin (`docker compose version` must work; we
 tested Docker 26 with Compose 2.26), Python 3.11 or newer with `venv` (we tested 3.12 and 3.13; on Debian or Ubuntu
 install it with `sudo apt install python3-venv`), git and GNU make. FalkorDB and the app together need roughly 1 GB of
-free memory and a few hundred MB of disk.
+free memory and a few hundred MB of disk. Ports 6379 (FalkorDB), 3000 (its Browser) and 8000 (the app) on 127.0.0.1
+must be free, so stop any other FalkorDB or Redis first.
 
 ```bash
 git clone https://github.com/Lucifer0000007/quorum && cd quorum

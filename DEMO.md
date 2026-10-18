@@ -4,7 +4,9 @@
 Docker in WSL, run `powershell -ExecutionPolicy Bypass -File scripts\dev_up.ps1` instead and leave it open. Optionally
 open the FalkorDB Browser on http://localhost:3000 in a second tab, on graph `company_brain`.
 
-The header should show: graph ready, the KEP count, the router in use, and the eval score from `evals/results.json`.
+The header should show: graph ready, the KEP count, the mode (`LLM` with provider and model, or `Keywords only` and
+why), and the eval results from `evals/results.json`. For a fully deterministic take, pick **Keywords only** in the
+Ask box's dropdown (or leave `LLM_MODEL` empty in `.env`) and say so.
 Close heavy browser tabs first: the app, FalkorDB and WSL together need a couple of GB free.
 
 **Start from a clean precedent store** so the "checked before" banner first appears after your own approval:
@@ -46,8 +48,10 @@ shows the live values.
 2. Click **Approve and record precedent**. The confirmation reads *Precedent recorded in agent_episodic_memory …
    Posted externally: no.*
 3. Simulate `4381` again. The blue banner reads *"This has been checked before"*. That banner comes from the second graph.
-4. End on the header's **Eval** figure: "Gold answers are computed straight from the YAML by a separate script,
-   and the app answers through the real graph. The number is computed by the eval run, not hardcoded."
+4. End on the header's **Eval** cell: read the multi-hop figure and the keyword-search figure under it off the
+   screen. "Multi-hop questions answered by the graph, against a plain keyword search over the same files. Gold
+   answers are computed straight from the YAML by a separate script, and the numbers come from the eval run, not
+   from me." (Lookups are only a baseline, and say so.)
 
 Backup lines if asked:
 - "Verdicts are fixed rules (R1–R4) in `agent/bailiff.py`. Across all 648 KEPs the live distribution
