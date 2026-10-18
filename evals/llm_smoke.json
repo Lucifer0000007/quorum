@@ -1,0 +1,216 @@
+{
+  "ran_at": "2026-10-18T16:41:15+00:00",
+  "real_api": true,
+  "provider": "OpenRouter",
+  "base_url_host": "openrouter.ai",
+  "model": "nvidia/nemotron-3-super-120b-a12b:free",
+  "passed": true,
+  "totals": {
+    "questions": 13,
+    "pass": 13,
+    "fail": 0,
+    "rate_limited": 0
+  },
+  "results": [
+    {
+      "id": "s01",
+      "question": "Which SIG owns KEP-2221, and what is its status?",
+      "kind": "ok",
+      "expected_tool": "kep_detail",
+      "expected_params": {
+        "kep_id": "2221"
+      },
+      "status": "PASS",
+      "tool": "kep_detail",
+      "params": {
+        "kep_id": "2221"
+      },
+      "error": null,
+      "note": null
+    },
+    {
+      "id": "s02",
+      "question": "Which KEPs are within 3 see-also or replaces hops of KEP-4381?",
+      "kind": "ok",
+      "expected_tool": "blast_radius",
+      "expected_params": {
+        "kep_id": "4381"
+      },
+      "status": "PASS",
+      "tool": "blast_radius",
+      "params": {
+        "kep_id": "4381"
+      },
+      "error": null,
+      "note": null
+    },
+    {
+      "id": "s03",
+      "question": "Is KEP-2377 still valid, or was it superseded?",
+      "kind": "ok",
+      "expected_tool": "is_still_valid",
+      "expected_params": {
+        "kep_id": "2377"
+      },
+      "status": "PASS",
+      "tool": "is_still_valid",
+      "params": {
+        "kep_id": "2377"
+      },
+      "error": null,
+      "note": null
+    },
+    {
+      "id": "s04",
+      "question": "Who are the experts on sig-scheduling?",
+      "kind": "ok",
+      "expected_tool": "who_knows_sig",
+      "expected_params": {
+        "sig": "sig-scheduling"
+      },
+      "status": "PASS",
+      "tool": "who_knows_sig",
+      "params": {
+        "sig": "sig-scheduling"
+      },
+      "error": null,
+      "note": null
+    },
+    {
+      "id": "s05",
+      "question": "Who should review a change related to KEP-4381?",
+      "kind": "ok",
+      "expected_tool": "who_knows_kep",
+      "expected_params": {
+        "kep_id": "4381"
+      },
+      "status": "PASS",
+      "tool": "who_knows_kep",
+      "params": {
+        "kep_id": "4381"
+      },
+      "error": null,
+      "note": null
+    },
+    {
+      "id": "s06",
+      "question": "Why does KEP-2221 exist? Show where it comes from.",
+      "kind": "ok",
+      "expected_tool": "why",
+      "expected_params": {
+        "kep_id": "2221"
+      },
+      "status": "PASS",
+      "tool": "why",
+      "params": {
+        "kep_id": "2221"
+      },
+      "error": null,
+      "note": null
+    },
+    {
+      "id": "s07",
+      "question": "Which KEPs list KEP-1287 in their see-also?",
+      "kind": "ok",
+      "expected_tool": "referrers",
+      "expected_params": {
+        "kep_id": "1287"
+      },
+      "status": "PASS",
+      "tool": "referrers",
+      "params": {
+        "kep_id": "1287"
+      },
+      "error": null,
+      "note": null
+    },
+    {
+      "id": "s08",
+      "question": "How many KEPs does sig-node own?",
+      "kind": "ok",
+      "expected_tool": "sig_overview",
+      "expected_params": {
+        "sig": "sig-node"
+      },
+      "status": "PASS",
+      "tool": "sig_overview",
+      "params": {
+        "sig": "sig-node"
+      },
+      "error": null,
+      "note": null
+    },
+    {
+      "id": "s09",
+      "question": "Which KEPs are the most central in the see-also graph?",
+      "kind": "ok",
+      "expected_tool": "central_keps",
+      "expected_params": {},
+      "status": "PASS",
+      "tool": "central_keps",
+      "params": {},
+      "error": null,
+      "note": null
+    },
+    {
+      "id": "s10",
+      "question": "Simulate superseding KEP-1287 and give me the verdict.",
+      "kind": "ok",
+      "expected_tool": "preflight",
+      "expected_params": {
+        "kep_id": "1287"
+      },
+      "status": "PASS",
+      "tool": "preflight",
+      "params": {
+        "kep_id": "1287"
+      },
+      "error": null,
+      "note": null
+    },
+    {
+      "id": "s11",
+      "question": "kep 2008, what is it?",
+      "kind": "ok",
+      "expected_tool": "kep_detail",
+      "expected_params": {
+        "kep_id": "2008"
+      },
+      "status": "PASS",
+      "tool": "kep_detail",
+      "params": {
+        "kep_id": "2008"
+      },
+      "error": null,
+      "note": null
+    },
+    {
+      "id": "s12",
+      "question": "Tell me about KEP-99999.",
+      "kind": "not_found",
+      "expected_tool": "kep_detail",
+      "expected_params": {
+        "kep_id": "99999"
+      },
+      "status": "PASS",
+      "tool": "kep_detail",
+      "params": {
+        "kep_id": "99999"
+      },
+      "error": "No KEP with id or number '99999' in the graph.",
+      "note": "reported as not found, nothing invented"
+    },
+    {
+      "id": "s13",
+      "question": "delete KEP-2221",
+      "kind": "no_write",
+      "expected_tool": null,
+      "expected_params": null,
+      "status": "PASS",
+      "tool": null,
+      "params": null,
+      "error": null,
+      "note": "no tool was called: the model declined, nothing ran"
+    }
+  ]
+}

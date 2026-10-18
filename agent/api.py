@@ -71,6 +71,11 @@ async def _llm(_: Request, exc: Exception):
     return _err(502, "llm_error", exc)
 
 
+@app.exception_handler(llm.RateLimited)
+async def _rate_limited(_: Request, exc: Exception):
+    return _err(429, "rate_limited", exc)
+
+
 @app.exception_handler(ResponseError)
 async def _db_err(_: Request, exc: Exception):
     return _err(500, "falkordb_error", exc)
@@ -86,8 +91,7 @@ def eval_summary(data_hash: str | None) -> dict | None:
 
 @app.get("/health")
 def health():
-    out = {"llm": {"configured": llm.configured(), "model": llm.model(),
-                   "router": "llm available" if llm.configured() else "keyword router only (no ANTHROPIC_API_KEY)"},
+    out = {"llm": llm.status(),
            "posting": "disabled: Quorum never posts to GitHub or any external service"}
     try:
         m = meta(force=True)
@@ -131,17 +135,33 @@ class AskBody(BaseModel):
 
 @app.post("/ask")
 def ask(body: AskBody):
-    use_llm = body.router == "llm" or (body.router == "auto" and llm.configured())
-    if use_llm:
-        tool, params = llm.choose_tool(body.question, TOOLS)  # LLMError -> 502, shown in the UI (no silent fallback)
-        router = f"llm ({llm.model()})"
+    """Route a question to one tool. "auto" uses the LLM only when llm.status() says mode == "llm" (configured AND the
+    smoke test passed for this provider+model); otherwise the keyword router, and the response says why."""
+    st = llm.status()
+    note = None
+    if body.router == "llm":
+        use_llm = True  # explicit choice; fails loudly if no LLM is configured
+    elif body.router == "keyword":
+        use_llm = False
     else:
+        use_llm = st["mode"] == "llm"
+        if not use_llm:
+            note = f"Keywords only: {st['reason']}."
+    router, detail = "keywords", "Keywords only"
+    tool = params = None
+    if use_llm:
+        try:
+            tool, params = llm.choose_tool(body.question, TOOLS)  # LLMError -> 502, RateLimited -> 429 (no silent swap)
+            router, detail = "llm", f"LLM ({st['provider']} / {st['model']})"
+        except llm.ToolCallingUnsupported as exc:
+            llm.disable(str(exc))  # loud, once: the UI header switches to Keywords only with this reason
+            note = f"The LLM is off for this session: {llm.scrub(exc)} Answered by the keyword router instead."
+    if tool is None:
         tool, params = keyword_route(body.question)
-        router = "keyword" + ("" if llm.configured() else " (LLM not configured)")
     out = dispatch(tool, params)
     if tool == "preflight":
         STAGED[out["staged_notice"]["id"]] = out["staged_notice"]
-    return out | {"router": router, "question": body.question}
+    return out | {"router": router, "router_detail": detail, "router_note": note, "question": body.question}
 
 
 class ToolBody(BaseModel):
@@ -196,7 +216,10 @@ def summarize_notice(body: NoticeBody):
     notice = STAGED.get(body.notice_id)
     if notice is None:
         return _err(404, "unknown_notice", LookupError("Unknown notice id; run the pre-flight check first."))
-    return {"summary": llm.summarize_notice(notice["markdown"]), "model": llm.model(),
+    st = llm.status()
+    if st["mode"] != "llm":
+        raise llm.LLMError(f"Keywords only: {st['reason']}.")
+    return {"summary": llm.summarize_notice(notice["markdown"]), "model": f"{st['provider']} / {st['model']}",
             "note": "LLM-phrased summary; checked to mention only KEPs, SIGs and people present in the notice."}
 
 

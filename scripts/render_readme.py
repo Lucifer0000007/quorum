@@ -10,6 +10,7 @@ from ingest.load import EDGE_QUERIES, NODE_QUERIES
 
 START, END = "<!-- QUERIES:START -->", "<!-- QUERIES:END -->"
 S_START, S_END = "<!-- STATS:START -->", "<!-- STATS:END -->"
+L_START, L_END = "<!-- LLM:START -->", "<!-- LLM:END -->"
 
 
 def _load(rel):
@@ -73,10 +74,34 @@ def render_stats() -> str:
     return "\n".join(out)
 
 
+def render_llm() -> str:
+    """The LLM facts, straight from the smoke-test evidence file (nothing here is typed by hand)."""
+    smoke = _load("evals/llm_smoke.json")
+    out = [L_START, ""]
+    if not smoke:
+        out.append("- Smoke test: **not run**. No LLM has been verified, so the default mode is Keywords only.")
+    else:
+        t = smoke["totals"]
+        where = "against the real API" if smoke.get("real_api") else "against a stub, NOT the real API"
+        verdict = "LLM" if smoke["passed"] else "Keywords only (the smoke test did not fully pass)"
+        out += [
+            f"- Provider and model tested: **{smoke['provider']}**, `{smoke['model']}` "
+            "(OpenAI-compatible chat completions with tool calling).",
+            f"- Smoke test (`python -m scripts.llm_smoke`), run {where} on {smoke['ran_at']}: "
+            f"**{t['pass']} passed, {t['fail']} failed, {t['rate_limited']} rate limited** of {t['questions']} "
+            "questions (`evals/llm_smoke.json`).",
+            f"- Mode for anyone who configures exactly this provider and model: {verdict}. With any other "
+            "configuration, or none, the default is Keywords only until the smoke test has passed for it.",
+        ]
+    out += ["", L_END]
+    return "\n".join(out)
+
+
 def main():
     readme = ROOT / "README.md"
     text = readme.read_text(encoding="utf-8")
-    for start, end, block in ((START, END, render_queries()), (S_START, S_END, render_stats())):
+    for start, end, block in ((START, END, render_queries()), (S_START, S_END, render_stats()),
+                             (L_START, L_END, render_llm())):
         if start not in text:
             raise SystemExit(f"README is missing the {start} marker")
         text = re.sub(re.escape(start) + r".*?" + re.escape(end), lambda _, b=block: b, text, flags=re.DOTALL)

@@ -55,8 +55,11 @@ async function loadHealth() {
     showError(health.detail || "FalkorDB graph is not ready. Run make up and make ingest.");
   }
   const llm = health.llm || {};
-  $("st-llm").innerHTML = llm.configured ? `language model (${esc(llm.model)})` : `keywords <span class="bad">(no API key set)</span>`;
-  $("router").options[0].textContent = llm.configured ? "Auto: language model" : "Auto: keywords";
+  const on = llm.mode === "llm";
+  $("st-llm").innerHTML = on
+    ? `LLM <small>${esc(llm.provider)} / ${esc(llm.model)}</small>`
+    : `Keywords only${llm.reason ? ` <small class="bad" title="${esc(llm.reason)}">${esc(llm.reason)}</small>` : ""}`;
+  $("router").options[0].textContent = on ? "Auto: LLM" : "Auto: Keywords only";
   const ev = health.eval;
   $("st-eval").innerHTML = ev
     ? `${ev.passed}/${ev.total} correct (${(ev.rate * 100).toFixed(1)}%)${ev.stale ? ' <span class="bad">stale</span>' : ""}`
@@ -145,7 +148,8 @@ function renderAnswer(out) {
   $("output").innerHTML = `
     <section class="panel">
       <p class="answer">${esc(out.summary)}</p>
-      <p class="meta">Tool ${esc(out.tool)}${Object.keys(out.tool_params).length ? " with " + esc(JSON.stringify(out.tool_params)) : ""}, routed by ${esc(out.router)}.</p>
+      <p class="meta">Tool ${esc(out.tool)}${Object.keys(out.tool_params).length ? " with " + esc(JSON.stringify(out.tool_params)) : ""}, chosen by ${esc(out.router_detail || out.router)}.</p>
+      ${out.router_note ? `<p class="router-note">${esc(out.router_note)}</p>` : ""}
       ${toolDetail(out)}
       ${out.path && out.path.length ? `<h3>Graph path</h3><p class="path">${esc(pathText(out.path.slice(0, 40)))}</p>` : ""}
       ${sources(out.source_links)}
@@ -181,7 +185,7 @@ function renderPreflight(out) {
       <div id="llm-summary"></div>
       <div class="gate">
         <button class="primary" id="approve">Approve and record precedent</button>
-        ${health?.llm?.configured ? `<button id="summarize">Summarize with the language model</button>` : ""}
+        ${health?.llm?.mode === "llm" ? `<button id="summarize">Summarize with the LLM</button>` : ""}
         <p class="hint">Approving writes a Precedent to the agent_episodic_memory graph. Nothing is posted to GitHub or anywhere else.</p>
       </div>
       <p id="approved" aria-live="polite"></p>
@@ -212,7 +216,11 @@ $("ask-form").addEventListener("submit", async (ev) => {
   const q = $("ask").value.trim();
   if (!q) return;
   showError(""); busy(ev.target, true);
-  try { renderAnswer(await call("/ask", { question: q, router: $("router").value })); } catch (e) { showError(e.message); }
+  try {
+    const out = await call("/ask", { question: q, router: $("router").value });
+    renderAnswer(out);
+    if (out.router_note) loadHealth();  // e.g. the LLM turned itself off: the header must say so
+  } catch (e) { showError(e.message); }
   busy(ev.target, false);
 });
 

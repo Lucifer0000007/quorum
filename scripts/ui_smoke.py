@@ -89,7 +89,7 @@ def run_flow(base: str, shots: Path | None) -> None:
         page.wait_for_selector("#st-graph .ok", timeout=15000)
         status = page.inner_text("#status")
         check(re.search(r"\d+ KEPs", status) is not None, "header shows the live graph counts")
-        check("keywords" in status or "language model" in status, "header says which router answers questions")
+        check("Keywords only" in status, "header shows the active mode (no LLM is configured for this run)")
         snap(page, "01-home.png")
 
         page.click("#examples button:nth-child(3)")
@@ -157,7 +157,9 @@ def main() -> int:
     port = free_port()
     base = f"http://127.0.0.1:{port}"
     log = Path(tempfile.gettempdir()) / "quorum-ui-smoke-server.log"
-    env = os.environ | {"QUORUM_EPISODIC_GRAPH": SMOKE_GRAPH, "ANTHROPIC_API_KEY": "", "PYTHONIOENCODING": "utf-8"}
+    # The throwaway server never gets an LLM (empty values win over .env), so this check is deterministic and free.
+    env = os.environ | {"QUORUM_EPISODIC_GRAPH": SMOKE_GRAPH, "PYTHONIOENCODING": "utf-8",
+                        "LLM_BASE_URL": "", "LLM_API_KEY": "", "LLM_MODEL": ""}
     with log.open("wb") as out:
         server = subprocess.Popen(
             [sys.executable, "-m", "uvicorn", "agent.api:app", "--host", "127.0.0.1", "--port", str(port)],

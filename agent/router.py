@@ -29,9 +29,13 @@ class NoParams(Params):
 class KepParams(Params):
     kep_id: str = Field(description="KEP number, e.g. '1287' (no 'KEP-' prefix needed)")
 
-    @field_validator("kep_id")
+    @field_validator("kep_id", mode="before")
     @classmethod
-    def _norm(cls, v: str) -> str:
+    def _norm(cls, v) -> str:
+        if isinstance(v, int) and not isinstance(v, bool):
+            v = str(v)  # models often emit KEP numbers as JSON integers; everything else must be a string
+        if not isinstance(v, str):
+            raise ValueError(f"kep_id must be a string, got {type(v).__name__}")
         v = v.strip()
         v = v[4:] if v.upper().startswith("KEP-") else v
         v = v.lstrip("#").strip().lower()
@@ -57,7 +61,7 @@ TOOLS = {
     "kep_detail": (KepParams, lambda p: q.kep_detail(p.kep_id), "Metadata, owning SIG, status, people of a KEP."),
     "blast_radius": (KepParams, lambda p: q.blast_radius(p.kep_id), "KEPs within 3 REPLACES/SEE_ALSO hops."),
     "is_still_valid": (KepParams, lambda p: q.is_still_valid(p.kep_id),
-                       "Is a KEP still valid: status, successors, stale dependencies."),
+                       "Is a KEP still valid: status, successors, stale KEPs it references."),
     "who_knows_kep": (KepParams, lambda p: q.who_knows(kep_id=p.kep_id), "Experts around a KEP."),
     "who_knows_sig": (SigParams, lambda p: q.who_knows(sig=p.sig), "Experts in a SIG."),
     "why": (KepParams, lambda p: q.why(p.kep_id), "Provenance chain of a KEP decision (sources, approvers, issue)."),
@@ -73,15 +77,24 @@ class RoutingError(ValueError):
     pass
 
 
-def dispatch(tool: str, params: dict) -> dict:
+def _typed(tool: str, params: dict) -> BaseModel:
     if tool not in TOOLS:
         raise RoutingError(f"unknown tool {tool!r}; available: {sorted(TOOLS)}")
-    model, fn, _ = TOOLS[tool]
     try:
-        typed = model(**params)
-    except ValidationError as exc:
-        raise RoutingError(f"invalid parameters for {tool}: {exc.errors()[0]['msg']}") from exc
-    out = fn(typed)
+        return TOOLS[tool][0](**params)
+    except (ValidationError, TypeError) as exc:
+        detail = exc.errors()[0]["msg"] if isinstance(exc, ValidationError) else str(exc)
+        raise RoutingError(f"invalid parameters for {tool}: {detail}") from exc
+
+
+def validate_params(tool: str, params: dict) -> dict:
+    """The only gate between what a model (or the keyword router) proposes and what runs: typed, normalized, strict."""
+    return _typed(tool, params).model_dump()
+
+
+def dispatch(tool: str, params: dict) -> dict:
+    typed = _typed(tool, params)
+    out = TOOLS[tool][1](typed)
     out["tool"] = tool
     out["tool_params"] = typed.model_dump()
     out["summary"] = summarize(tool, out)
@@ -151,7 +164,7 @@ def summarize(tool: str, out: dict) -> str:
     if tool == "is_still_valid":
         succ = ", ".join("KEP-" + s["id"] for s in r["successors"]) or "none"
         return (f"KEP-{r['kep_id']} is {r['status']} → {r['validity']}. Successors: {succ}. "
-                f"Stale dependencies: {len(r['stale_ancestors'])}.")
+                f"Stale KEPs referenced via see-also: {len(r['stale_ancestors'])}.")
     if tool in ("who_knows_kep", "who_knows_sig"):
         if r["no_result"]:
             return f"No people found for {r['scope']}."
