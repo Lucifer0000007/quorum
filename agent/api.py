@@ -85,8 +85,13 @@ def eval_summary(data_hash: str | None) -> dict | None:
     if not RESULTS.exists():
         return None
     r = json.loads(RESULTS.read_text(encoding="utf-8"))
-    return {"passed": r["passed"], "total": r["total"], "rate": r["rate"], "ran_at": r["ran_at"],
-            "stale": data_hash is not None and r.get("data_hash") != data_hash}
+
+    def pick(suite: dict) -> dict:
+        return {"total": suite["total"], "query_layer": suite["query_layer_correct"],
+                "keyword": suite["keyword_correct"]}
+
+    return {"multihop": pick(r["suites"]["multihop"]), "lookups": pick(r["suites"]["lookups"]),
+            "ran_at": r["ran_at"], "stale": data_hash is not None and r.get("data_hash") != data_hash}
 
 
 @app.get("/health")

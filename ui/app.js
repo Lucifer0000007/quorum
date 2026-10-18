@@ -62,7 +62,9 @@ async function loadHealth() {
   $("router").options[0].textContent = on ? "Auto: LLM" : "Auto: Keywords only";
   const ev = health.eval;
   $("st-eval").innerHTML = ev
-    ? `${ev.passed}/${ev.total} correct (${(ev.rate * 100).toFixed(1)}%)${ev.stale ? ' <span class="bad">stale</span>' : ""}`
+    ? `Multi-hop ${ev.multihop.query_layer}/${ev.multihop.total}${ev.stale ? ' <span class="bad">stale</span>' : ""}`
+      + `<small>keyword search ${ev.multihop.keyword}/${ev.multihop.total}</small>`
+      + `<small>lookups (baseline) ${ev.lookups.query_layer}/${ev.lookups.total}, keyword ${ev.lookups.keyword}/${ev.lookups.total}</small>`
     : "not run yet";
 }
 

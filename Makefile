@@ -9,7 +9,7 @@ DOCKER ?= docker
 # Machine-local overrides (gitignored), e.g. DOCKER := wsl -d Debian -u root -- docker
 -include local.mk
 
-.PHONY: venv up down ping clone-data report ingest verdicts readme test test-fast ui-smoke lint run eval check
+.PHONY: venv up down ping clone-data report ingest verdicts readme status test test-fast ui-smoke lint run eval check
 
 # On Windows the `python3` name is often a Store stub: make venv PYTHON=python
 venv:
@@ -62,6 +62,10 @@ verdicts:
 readme:
 	$(PY) -m scripts.render_readme
 
+# docs/STATUS.md: facts from the live system, each with the command that reproduces it (runs the whole test suite)
+status:
+	$(PY) -m scripts.render_status
+
 lint:
 	$(PY) -m ruff check .
 	$(PY) -m scripts.lint_cypher
@@ -70,7 +74,8 @@ run:
 	$(PY) -m uvicorn agent.api:app --host 127.0.0.1 --port 8000
 
 eval:
-	$(PY) -m evals.make_gold
+	$(PY) -m evals.lookups.make_gold
+	$(PY) -m evals.multihop.make_gold
 	$(PY) -m evals.run_eval
 
 check:

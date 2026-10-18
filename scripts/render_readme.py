@@ -12,6 +12,7 @@ START, END = "<!-- QUERIES:START -->", "<!-- QUERIES:END -->"
 S_START, S_END = "<!-- STATS:START -->", "<!-- STATS:END -->"
 L_START, L_END = "<!-- LLM:START -->", "<!-- LLM:END -->"
 V_START, V_END = "<!-- VERDICTS:START -->", "<!-- VERDICTS:END -->"
+E_START, E_END = "<!-- EVAL:START -->", "<!-- EVAL:END -->"
 
 
 def _load(rel):
@@ -67,10 +68,55 @@ def render_stats() -> str:
             out.append("- Threshold sensitivity: requiring 3 SIGs instead of 2 would gate "
                        f"{alt.get('HUMAN_GATE_REQUIRED', 0)} KEPs instead of {sim.get('HUMAN_GATE_REQUIRED', 0)}.")
     if ev:
-        out.append(f"- Eval: **{ev['passed']}/{ev['total']} ({ev['rate']:.1%})** questions answered correctly via the "
-                   f"keyword router + live graph, run {ev['ran_at']} on data `{ev['data_hash'][:12]}`; by kind: "
-                   + ", ".join(f"{k} {x['passed']}/{x['total']}" for k, x in ev["by_kind"].items()) + ".")
+        out.append(f"- Eval run {ev['ran_at']} on data `{ev['data_hash'][:12]}`: results in the section at the top.")
     out += ["", S_END]
+    return "\n".join(out)
+
+
+def _eval_table(suite: dict) -> list[str]:
+    head = ["| Question kind | Questions | Query layer correct | Keyword search correct | Tie (both correct) "
+            "| Query layer only | Keyword search only | Both wrong |", "|---|---|---|---|---|---|---|---|"]
+
+    def row(label: str, s: dict) -> str:
+        o = s["outcomes"]
+        return (f"| {label} | {s['total']} | {s['query_layer_correct']} | {s['keyword_correct']} | {o['tie']} "
+                f"| {o['query_layer_only']} | {o['keyword_only']} | {o['both_wrong']} |")
+
+    return head + [row(f"`{k}`", s) for k, s in suite["by_kind"].items()] + [row("**All**", suite)]
+
+
+def render_eval() -> str:
+    """Eval results, straight from evals/results.json (python -m evals.run_eval). Multi-hop leads; lookups follow."""
+    ev = _load("evals/results.json")
+    out = [E_START, ""]
+    if not ev:
+        return "\n".join(out + ["_Run `make eval` to generate the results._", "", E_END])
+    mh, lk = ev["suites"]["multihop"], ev["suites"]["lookups"]
+    failed = [r["id"] for s in (mh, lk) for r in s["questions"] if not r["query_layer"]["ok"]]
+    kw_only = [r["id"] for s in (mh, lk) for r in s["questions"] if r["outcome"] == "keyword_only"]
+    out += [
+        f"Every question below was answered by two systems and scored against gold answers computed from the raw YAML "
+        f"alone (no FalkorDB, no `ingest/`). Run {ev['ran_at']} on data `{ev['data_hash'][:12]}`, corpus commit "
+        f"`{str(ev['corpus_commit'])[:12]}`; reproduce with `make eval`.", "",
+        "- **Query layer**: Quorum, i.e. typed queries over the FalkorDB graph.",
+        "- **Keyword search**: a one-pass keyword search over the raw kep.yaml text (`evals/baseline.py`). It is a "
+        "plain text baseline, not a strong retrieval system: it never goes past the first hop and applies none of the "
+        "cleaning rules (SIG aliases, status normalization, team aliases). A stronger baseline, such as iterated "
+        "searches or a model reading the files, could close part of the gap.", "",
+        "### Multi-hop questions", "",
+        "These need paths: everything reachable via see-also/replaces within 2 or 3 hops, the active KEPs reachable "
+        "from a withdrawn, rejected or replaced KEP, and the SIGs that own them. \"Reachable via see-also/replaces\" "
+        "means exactly that; a link is not a claim that one KEP depends on another.", "",
+        *_eval_table(mh), "",
+        "### Lookups (a baseline)", "",
+        "Single-fact questions (owner, status, successor, referrers, counts, approvers). A keyword search can answer "
+        "most of these, so they check that the graph agrees with the files rather than show an advantage.", "",
+        *_eval_table(lk), "",
+        f"Query-layer failures: {', '.join(failed) if failed else 'none'}. Questions only the keyword search got "
+        f"right: {', '.join(kw_only) if kw_only else 'none'}. Per-question answers, gold and errors for both systems "
+        "are in `evals/results.json`.",
+        "", E_END,
+    ]
     return "\n".join(out)
 
 
@@ -149,7 +195,8 @@ def main():
     readme = ROOT / "README.md"
     text = readme.read_text(encoding="utf-8")
     for start, end, block in ((START, END, render_queries()), (S_START, S_END, render_stats()),
-                             (L_START, L_END, render_llm()), (V_START, V_END, render_verdicts())):
+                             (L_START, L_END, render_llm()), (V_START, V_END, render_verdicts()),
+                             (E_START, E_END, render_eval())):
         if start not in text:
             raise SystemExit(f"README is missing the {start} marker")
         text = re.sub(re.escape(start) + r".*?" + re.escape(end), lambda _, b=block: b, text, flags=re.DOTALL)

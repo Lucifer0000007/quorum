@@ -1,0 +1,456 @@
+{
+  "source_commit": "5b503a75369bdfdd494a2c2c72107a41bf6dd1a8",
+  "generated_by": "evals/multihop/make_gold.py",
+  "questions": [
+    {
+      "id": "q01",
+      "kind": "hop2_set",
+      "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-5027?",
+      "params": {
+        "kep_id": "5027"
+      },
+      "gold": [
+        "3063",
+        "4381",
+        "4815",
+        "4816",
+        "4817",
+        "5004",
+        "5007",
+        "5018",
+        "5055",
+        "5075",
+        "5234",
+        "5304",
+        "5491",
+        "5677",
+        "5690",
+        "5941",
+        "5981",
+        "6080"
+      ]
+    },
+    {
+      "id": "q02",
+      "kind": "reachable_sigs",
+      "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-3838?",
+      "params": {
+        "kep_id": "3838"
+      },
+      "gold": [
+        "sig-apps",
+        "sig-scheduling"
+      ]
+    },
+    {
+      "id": "q03",
+      "kind": "reachable_sigs",
+      "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-4322?",
+      "params": {
+        "kep_id": "4322"
+      },
+      "gold": [
+        "sig-auth",
+        "sig-multicluster"
+      ]
+    },
+    {
+      "id": "q04",
+      "kind": "hop2_set",
+      "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-5554?",
+      "params": {
+        "kep_id": "5554"
+      },
+      "gold": [
+        "1287",
+        "2590",
+        "3570",
+        "4680",
+        "4885",
+        "5067",
+        "5328",
+        "5419",
+        "5836",
+        "5972",
+        "6030",
+        "6061",
+        "6122",
+        "6313",
+        "6395"
+      ]
+    },
+    {
+      "id": "q05",
+      "kind": "reachable_sigs",
+      "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-555?",
+      "params": {
+        "kep_id": "555"
+      },
+      "gold": [
+        "sig-cli"
+      ]
+    },
+    {
+      "id": "q06",
+      "kind": "reachable_count_3hop",
+      "question": "How many KEPs are reachable via see-also/replaces within 3 hops of KEP-5491?",
+      "params": {
+        "kep_id": "5491"
+      },
+      "gold": 26
+    },
+    {
+      "id": "q07",
+      "kind": "reachable_count_3hop",
+      "question": "How many KEPs are reachable via see-also/replaces within 3 hops of KEP-5366?",
+      "params": {
+        "kep_id": "5366"
+      },
+      "gold": 3
+    },
+    {
+      "id": "q08",
+      "kind": "hop2_set",
+      "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-95?",
+      "params": {
+        "kep_id": "95"
+      },
+      "gold": [
+        "2876",
+        "3488",
+        "3716",
+        "4153",
+        "4358"
+      ]
+    },
+    {
+      "id": "q09",
+      "kind": "reachable_sigs",
+      "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-5677?",
+      "params": {
+        "kep_id": "5677"
+      },
+      "gold": [
+        "sig-auth",
+        "sig-network",
+        "sig-node",
+        "sig-scheduling",
+        "sig-storage"
+      ]
+    },
+    {
+      "id": "q10",
+      "kind": "hop2_set",
+      "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-1441?",
+      "params": {
+        "kep_id": "1441"
+      },
+      "gold": [
+        "277",
+        "4292"
+      ]
+    },
+    {
+      "id": "q11",
+      "kind": "stale_reach",
+      "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-2451, which is replaced?",
+      "params": {
+        "kep_id": "2451"
+      },
+      "gold": [
+        "1205"
+      ]
+    },
+    {
+      "id": "q12",
+      "kind": "reachable_sigs",
+      "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-2342?",
+      "params": {
+        "kep_id": "2342"
+      },
+      "gold": [
+        "sig-api-machinery",
+        "sig-architecture"
+      ]
+    },
+    {
+      "id": "q13",
+      "kind": "stale_reach",
+      "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-2943, which is withdrawn?",
+      "params": {
+        "kep_id": "2943"
+      },
+      "gold": [
+        "2079"
+      ]
+    },
+    {
+      "id": "q14",
+      "kind": "stale_reach",
+      "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-2718, which is withdrawn?",
+      "params": {
+        "kep_id": "2718"
+      },
+      "gold": [
+        "541",
+        "2149",
+        "4322",
+        "5313"
+      ]
+    },
+    {
+      "id": "q15",
+      "kind": "stale_reach",
+      "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-3063, which is withdrawn?",
+      "params": {
+        "kep_id": "3063"
+      },
+      "gold": [
+        "606",
+        "693",
+        "1287",
+        "1790",
+        "2590",
+        "3573",
+        "4009",
+        "4247",
+        "4381",
+        "4680",
+        "4815",
+        "4816",
+        "4817",
+        "5004",
+        "5007",
+        "5018",
+        "5027",
+        "5055",
+        "5067",
+        "5075",
+        "5234",
+        "5304",
+        "5328",
+        "5419",
+        "5491",
+        "5554",
+        "5677",
+        "5690",
+        "5710",
+        "5836",
+        "5941",
+        "5972",
+        "5981",
+        "6030",
+        "6072",
+        "6080",
+        "6122",
+        "6313",
+        "6395",
+        "6406"
+      ]
+    },
+    {
+      "id": "q16",
+      "kind": "hop2_set",
+      "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-6395?",
+      "params": {
+        "kep_id": "6395"
+      },
+      "gold": [
+        "1287",
+        "2590",
+        "4680",
+        "5067",
+        "5419",
+        "5554",
+        "5836",
+        "5972",
+        "6030",
+        "6122"
+      ]
+    },
+    {
+      "id": "q17",
+      "kind": "reachable_sigs",
+      "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-2438?",
+      "params": {
+        "kep_id": "2438"
+      },
+      "gold": [
+        "sig-network"
+      ]
+    },
+    {
+      "id": "q18",
+      "kind": "stale_reach",
+      "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-3130, which is replaced?",
+      "params": {
+        "kep_id": "3130"
+      },
+      "gold": [
+        "3299"
+      ]
+    },
+    {
+      "id": "q19",
+      "kind": "stale_reach",
+      "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-536, which is replaced?",
+      "params": {
+        "kep_id": "536"
+      },
+      "gold": [
+        "2086",
+        "2433",
+        "3015",
+        "4444"
+      ]
+    },
+    {
+      "id": "q20",
+      "kind": "hop2_set",
+      "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-1693?",
+      "params": {
+        "kep_id": "1693"
+      },
+      "gold": [
+        "1635",
+        "3136"
+      ]
+    },
+    {
+      "id": "q21",
+      "kind": "reachable_count_3hop",
+      "question": "How many KEPs are reachable via see-also/replaces within 3 hops of KEP-5729?",
+      "params": {
+        "kep_id": "5729"
+      },
+      "gold": 15
+    },
+    {
+      "id": "q22",
+      "kind": "hop2_set",
+      "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-2000?",
+      "params": {
+        "kep_id": "2000"
+      },
+      "gold": [
+        "2268",
+        "4802"
+      ]
+    },
+    {
+      "id": "q23",
+      "kind": "stale_reach",
+      "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-5339, which is replaced?",
+      "params": {
+        "kep_id": "5339"
+      },
+      "gold": [
+        "541",
+        "1645",
+        "2149",
+        "4322",
+        "5313"
+      ]
+    },
+    {
+      "id": "q24",
+      "kind": "hop2_set",
+      "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-4680?",
+      "params": {
+        "kep_id": "4680"
+      },
+      "gold": [
+        "606",
+        "693",
+        "1287",
+        "1790",
+        "2590",
+        "3063",
+        "3573",
+        "4009",
+        "4247",
+        "4381",
+        "4817",
+        "5004",
+        "5067",
+        "5419",
+        "5554",
+        "5677",
+        "5836",
+        "5972",
+        "6030",
+        "6122",
+        "6313",
+        "6395"
+      ]
+    },
+    {
+      "id": "q25",
+      "kind": "reachable_count_3hop",
+      "question": "How many KEPs are reachable via see-also/replaces within 3 hops of KEP-1867?",
+      "params": {
+        "kep_id": "1867"
+      },
+      "gold": 9
+    },
+    {
+      "id": "q26",
+      "kind": "reachable_sigs",
+      "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-135?",
+      "params": {
+        "kep_id": "135"
+      },
+      "gold": [
+        "sig-auth",
+        "sig-network",
+        "sig-node"
+      ]
+    },
+    {
+      "id": "q27",
+      "kind": "reachable_count_3hop",
+      "question": "How many KEPs are reachable via see-also/replaces within 3 hops of KEP-1287?",
+      "params": {
+        "kep_id": "1287"
+      },
+      "gold": 43
+    },
+    {
+      "id": "q28",
+      "kind": "reachable_sigs",
+      "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-1451?",
+      "params": {
+        "kep_id": "1451"
+      },
+      "gold": [
+        "sig-scheduling"
+      ]
+    },
+    {
+      "id": "q29",
+      "kind": "stale_reach",
+      "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-4153, which is replaced?",
+      "params": {
+        "kep_id": "4153"
+      },
+      "gold": [
+        "95",
+        "692",
+        "1929",
+        "2876",
+        "2887",
+        "2896",
+        "3488",
+        "3716",
+        "3962",
+        "4008",
+        "4358",
+        "5073",
+        "5468",
+        "5793",
+        "5975",
+        "6164"
+      ]
+    }
+  ]
+}

@@ -1,553 +1,1920 @@
 {
-  "passed": 38,
-  "total": 38,
-  "rate": 1.0,
-  "ran_at": "2026-10-18T15:52:28+00:00",
+  "ran_at": "2026-10-18T17:07:31+00:00",
   "data_hash": "32731b67d488d88eab9806365fa0dc0ea80ae23869e75cee0445f8492dd6a54c",
-  "gold_source_commit": "5b503a75369bdfdd494a2c2c72107a41bf6dd1a8",
-  "graph_source_commit": "5b503a75369bdfdd494a2c2c72107a41bf6dd1a8",
-  "router": "keyword (deterministic)",
-  "seconds": 2.4,
-  "by_kind": {
-    "approvers": {
-      "passed": 5,
-      "total": 5
-    },
-    "owning_sig": {
-      "passed": 5,
-      "total": 5
-    },
-    "has_successor": {
-      "passed": 8,
-      "total": 8
-    },
-    "blast_radius_count": {
-      "passed": 5,
-      "total": 5
-    },
-    "sig_kep_count": {
-      "passed": 5,
-      "total": 5
-    },
-    "see_also_referrers": {
-      "passed": 5,
-      "total": 5
-    },
-    "status": {
-      "passed": 5,
-      "total": 5
-    }
+  "corpus_commit": "5b503a75369bdfdd494a2c2c72107a41bf6dd1a8",
+  "systems": {
+    "query_layer": "Quorum: keyword router + typed tools for lookups; agent/queries.py blast_radius (hop distance per KEP) for multi-hop questions; FalkorDB underneath",
+    "keyword_search": "evals/baseline.py: one retrieval round of keyword search over the raw kep.yaml text"
   },
-  "questions": [
-    {
-      "id": "q01",
-      "kind": "approvers",
-      "question": "Who approved KEP-583?",
-      "gold": [
-        "bsalamat"
-      ],
-      "tool": "why",
-      "params": {
-        "kep_id": "583"
+  "suites": {
+    "multihop": {
+      "title": "Multi-hop",
+      "total": 29,
+      "query_layer_correct": 29,
+      "keyword_correct": 9,
+      "outcomes": {
+        "tie": 9,
+        "query_layer_only": 20,
+        "keyword_only": 0,
+        "both_wrong": 0
       },
-      "answer": [
-        "bsalamat"
-      ],
-      "ok": true
+      "by_kind": {
+        "hop2_set": {
+          "total": 8,
+          "query_layer_correct": 8,
+          "keyword_correct": 2,
+          "outcomes": {
+            "tie": 2,
+            "query_layer_only": 6,
+            "keyword_only": 0,
+            "both_wrong": 0
+          }
+        },
+        "reachable_count_3hop": {
+          "total": 5,
+          "query_layer_correct": 5,
+          "keyword_correct": 0,
+          "outcomes": {
+            "tie": 0,
+            "query_layer_only": 5,
+            "keyword_only": 0,
+            "both_wrong": 0
+          }
+        },
+        "reachable_sigs": {
+          "total": 8,
+          "query_layer_correct": 8,
+          "keyword_correct": 4,
+          "outcomes": {
+            "tie": 4,
+            "query_layer_only": 4,
+            "keyword_only": 0,
+            "both_wrong": 0
+          }
+        },
+        "stale_reach": {
+          "total": 8,
+          "query_layer_correct": 8,
+          "keyword_correct": 3,
+          "outcomes": {
+            "tie": 3,
+            "query_layer_only": 5,
+            "keyword_only": 0,
+            "both_wrong": 0
+          }
+        }
+      },
+      "questions": [
+        {
+          "id": "q01",
+          "kind": "hop2_set",
+          "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-5027?",
+          "params": {
+            "kep_id": "5027"
+          },
+          "gold": [
+            "3063",
+            "4381",
+            "4815",
+            "4816",
+            "4817",
+            "5004",
+            "5007",
+            "5018",
+            "5055",
+            "5075",
+            "5234",
+            "5304",
+            "5491",
+            "5677",
+            "5690",
+            "5941",
+            "5981",
+            "6080"
+          ],
+          "query_layer": {
+            "answer": [
+              "3063",
+              "4381",
+              "4815",
+              "4816",
+              "4817",
+              "5004",
+              "5007",
+              "5018",
+              "5055",
+              "5075",
+              "5234",
+              "5304",
+              "5491",
+              "5677",
+              "5690",
+              "5941",
+              "5981",
+              "6080"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "4381",
+              "5055"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q02",
+          "kind": "reachable_sigs",
+          "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-3838?",
+          "params": {
+            "kep_id": "3838"
+          },
+          "gold": [
+            "sig-apps",
+            "sig-scheduling"
+          ],
+          "query_layer": {
+            "answer": [
+              "sig-apps",
+              "sig-scheduling"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "sig-scheduling"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q03",
+          "kind": "reachable_sigs",
+          "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-4322?",
+          "params": {
+            "kep_id": "4322"
+          },
+          "gold": [
+            "sig-auth",
+            "sig-multicluster"
+          ],
+          "query_layer": {
+            "answer": [
+              "sig-auth",
+              "sig-multicluster"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "sig-auth",
+              "sig-multicluster"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q04",
+          "kind": "hop2_set",
+          "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-5554?",
+          "params": {
+            "kep_id": "5554"
+          },
+          "gold": [
+            "1287",
+            "2590",
+            "3570",
+            "4680",
+            "4885",
+            "5067",
+            "5328",
+            "5419",
+            "5836",
+            "5972",
+            "6030",
+            "6061",
+            "6122",
+            "6313",
+            "6395"
+          ],
+          "query_layer": {
+            "answer": [
+              "1287",
+              "2590",
+              "3570",
+              "4680",
+              "4885",
+              "5067",
+              "5328",
+              "5419",
+              "5836",
+              "5972",
+              "6030",
+              "6061",
+              "6122",
+              "6313",
+              "6395"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "1287",
+              "5328",
+              "6122"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q05",
+          "kind": "reachable_sigs",
+          "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-555?",
+          "params": {
+            "kep_id": "555"
+          },
+          "gold": [
+            "sig-cli"
+          ],
+          "query_layer": {
+            "answer": [
+              "sig-cli"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "sig-cli"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q06",
+          "kind": "reachable_count_3hop",
+          "question": "How many KEPs are reachable via see-also/replaces within 3 hops of KEP-5491?",
+          "params": {
+            "kep_id": "5491"
+          },
+          "gold": 26,
+          "query_layer": {
+            "answer": 26,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": 4,
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q07",
+          "kind": "reachable_count_3hop",
+          "question": "How many KEPs are reachable via see-also/replaces within 3 hops of KEP-5366?",
+          "params": {
+            "kep_id": "5366"
+          },
+          "gold": 3,
+          "query_layer": {
+            "answer": 3,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": 1,
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q08",
+          "kind": "hop2_set",
+          "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-95?",
+          "params": {
+            "kep_id": "95"
+          },
+          "gold": [
+            "2876",
+            "3488",
+            "3716",
+            "4153",
+            "4358"
+          ],
+          "query_layer": {
+            "answer": [
+              "2876",
+              "3488",
+              "3716",
+              "4153",
+              "4358"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "2876",
+              "4358"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q09",
+          "kind": "reachable_sigs",
+          "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-5677?",
+          "params": {
+            "kep_id": "5677"
+          },
+          "gold": [
+            "sig-auth",
+            "sig-network",
+            "sig-node",
+            "sig-scheduling",
+            "sig-storage"
+          ],
+          "query_layer": {
+            "answer": [
+              "sig-auth",
+              "sig-network",
+              "sig-node",
+              "sig-scheduling",
+              "sig-storage"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "sig-node",
+              "sig-scheduling"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q10",
+          "kind": "hop2_set",
+          "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-1441?",
+          "params": {
+            "kep_id": "1441"
+          },
+          "gold": [
+            "277",
+            "4292"
+          ],
+          "query_layer": {
+            "answer": [
+              "277",
+              "4292"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "277",
+              "4292"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q11",
+          "kind": "stale_reach",
+          "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-2451, which is replaced?",
+          "params": {
+            "kep_id": "2451"
+          },
+          "gold": [
+            "1205"
+          ],
+          "query_layer": {
+            "answer": [
+              "1205"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "1205"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q12",
+          "kind": "reachable_sigs",
+          "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-2342?",
+          "params": {
+            "kep_id": "2342"
+          },
+          "gold": [
+            "sig-api-machinery",
+            "sig-architecture"
+          ],
+          "query_layer": {
+            "answer": [
+              "sig-api-machinery",
+              "sig-architecture"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "sig-api-machinery"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q13",
+          "kind": "stale_reach",
+          "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-2943, which is withdrawn?",
+          "params": {
+            "kep_id": "2943"
+          },
+          "gold": [
+            "2079"
+          ],
+          "query_layer": {
+            "answer": [
+              "2079"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "2079"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q14",
+          "kind": "stale_reach",
+          "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-2718, which is withdrawn?",
+          "params": {
+            "kep_id": "2718"
+          },
+          "gold": [
+            "541",
+            "2149",
+            "4322",
+            "5313"
+          ],
+          "query_layer": {
+            "answer": [
+              "2149",
+              "4322",
+              "5313",
+              "541"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q15",
+          "kind": "stale_reach",
+          "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-3063, which is withdrawn?",
+          "params": {
+            "kep_id": "3063"
+          },
+          "gold": [
+            "606",
+            "693",
+            "1287",
+            "1790",
+            "2590",
+            "3573",
+            "4009",
+            "4247",
+            "4381",
+            "4680",
+            "4815",
+            "4816",
+            "4817",
+            "5004",
+            "5007",
+            "5018",
+            "5027",
+            "5055",
+            "5067",
+            "5075",
+            "5234",
+            "5304",
+            "5328",
+            "5419",
+            "5491",
+            "5554",
+            "5677",
+            "5690",
+            "5710",
+            "5836",
+            "5941",
+            "5972",
+            "5981",
+            "6030",
+            "6072",
+            "6080",
+            "6122",
+            "6313",
+            "6395",
+            "6406"
+          ],
+          "query_layer": {
+            "answer": [
+              "1287",
+              "1790",
+              "2590",
+              "3573",
+              "4009",
+              "4247",
+              "4381",
+              "4680",
+              "4815",
+              "4816",
+              "4817",
+              "5004",
+              "5007",
+              "5018",
+              "5027",
+              "5055",
+              "5067",
+              "5075",
+              "5234",
+              "5304",
+              "5328",
+              "5419",
+              "5491",
+              "5554",
+              "5677",
+              "5690",
+              "5710",
+              "5836",
+              "5941",
+              "5972",
+              "5981",
+              "6030",
+              "606",
+              "6072",
+              "6080",
+              "6122",
+              "6313",
+              "6395",
+              "6406",
+              "693"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "4009",
+              "4247",
+              "4381",
+              "4680",
+              "4817",
+              "5677"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q16",
+          "kind": "hop2_set",
+          "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-6395?",
+          "params": {
+            "kep_id": "6395"
+          },
+          "gold": [
+            "1287",
+            "2590",
+            "4680",
+            "5067",
+            "5419",
+            "5554",
+            "5836",
+            "5972",
+            "6030",
+            "6122"
+          ],
+          "query_layer": {
+            "answer": [
+              "1287",
+              "2590",
+              "4680",
+              "5067",
+              "5419",
+              "5554",
+              "5836",
+              "5972",
+              "6030",
+              "6122"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "1287",
+              "5972"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q17",
+          "kind": "reachable_sigs",
+          "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-2438?",
+          "params": {
+            "kep_id": "2438"
+          },
+          "gold": [
+            "sig-network"
+          ],
+          "query_layer": {
+            "answer": [
+              "sig-network"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "sig-network"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q18",
+          "kind": "stale_reach",
+          "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-3130, which is replaced?",
+          "params": {
+            "kep_id": "3130"
+          },
+          "gold": [
+            "3299"
+          ],
+          "query_layer": {
+            "answer": [
+              "3299"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "3299"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q19",
+          "kind": "stale_reach",
+          "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-536, which is replaced?",
+          "params": {
+            "kep_id": "536"
+          },
+          "gold": [
+            "2086",
+            "2433",
+            "3015",
+            "4444"
+          ],
+          "query_layer": {
+            "answer": [
+              "2086",
+              "2433",
+              "3015",
+              "4444"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "2086",
+              "2433",
+              "4444"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q20",
+          "kind": "hop2_set",
+          "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-1693?",
+          "params": {
+            "kep_id": "1693"
+          },
+          "gold": [
+            "1635",
+            "3136"
+          ],
+          "query_layer": {
+            "answer": [
+              "1635",
+              "3136"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "1635"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q21",
+          "kind": "reachable_count_3hop",
+          "question": "How many KEPs are reachable via see-also/replaces within 3 hops of KEP-5729?",
+          "params": {
+            "kep_id": "5729"
+          },
+          "gold": 15,
+          "query_layer": {
+            "answer": 15,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": 5,
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q22",
+          "kind": "hop2_set",
+          "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-2000?",
+          "params": {
+            "kep_id": "2000"
+          },
+          "gold": [
+            "2268",
+            "4802"
+          ],
+          "query_layer": {
+            "answer": [
+              "2268",
+              "4802"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "2268",
+              "4802"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q23",
+          "kind": "stale_reach",
+          "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-5339, which is replaced?",
+          "params": {
+            "kep_id": "5339"
+          },
+          "gold": [
+            "541",
+            "1645",
+            "2149",
+            "4322",
+            "5313"
+          ],
+          "query_layer": {
+            "answer": [
+              "1645",
+              "2149",
+              "4322",
+              "5313",
+              "541"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "541",
+              "4322"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q24",
+          "kind": "hop2_set",
+          "question": "Which KEPs are reachable via see-also/replaces within 2 hops of KEP-4680?",
+          "params": {
+            "kep_id": "4680"
+          },
+          "gold": [
+            "606",
+            "693",
+            "1287",
+            "1790",
+            "2590",
+            "3063",
+            "3573",
+            "4009",
+            "4247",
+            "4381",
+            "4817",
+            "5004",
+            "5067",
+            "5419",
+            "5554",
+            "5677",
+            "5836",
+            "5972",
+            "6030",
+            "6122",
+            "6313",
+            "6395"
+          ],
+          "query_layer": {
+            "answer": [
+              "1287",
+              "1790",
+              "2590",
+              "3063",
+              "3573",
+              "4009",
+              "4247",
+              "4381",
+              "4817",
+              "5004",
+              "5067",
+              "5419",
+              "5554",
+              "5677",
+              "5836",
+              "5972",
+              "6030",
+              "606",
+              "6122",
+              "6313",
+              "6395",
+              "693"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "1287",
+              "1790",
+              "3063",
+              "3573",
+              "4817"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q25",
+          "kind": "reachable_count_3hop",
+          "question": "How many KEPs are reachable via see-also/replaces within 3 hops of KEP-1867?",
+          "params": {
+            "kep_id": "1867"
+          },
+          "gold": 9,
+          "query_layer": {
+            "answer": 9,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": 1,
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q26",
+          "kind": "reachable_sigs",
+          "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-135?",
+          "params": {
+            "kep_id": "135"
+          },
+          "gold": [
+            "sig-auth",
+            "sig-network",
+            "sig-node"
+          ],
+          "query_layer": {
+            "answer": [
+              "sig-auth",
+              "sig-network",
+              "sig-node"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "sig-node"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q27",
+          "kind": "reachable_count_3hop",
+          "question": "How many KEPs are reachable via see-also/replaces within 3 hops of KEP-1287?",
+          "params": {
+            "kep_id": "1287"
+          },
+          "gold": 43,
+          "query_layer": {
+            "answer": 43,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": 10,
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q28",
+          "kind": "reachable_sigs",
+          "question": "Which SIGs own the active KEPs reachable via see-also/replaces within 3 hops of KEP-1451?",
+          "params": {
+            "kep_id": "1451"
+          },
+          "gold": [
+            "sig-scheduling"
+          ],
+          "query_layer": {
+            "answer": [
+              "sig-scheduling"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "sig-scheduling"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q29",
+          "kind": "stale_reach",
+          "question": "Which active KEPs are reachable via see-also/replaces within 3 hops of KEP-4153, which is replaced?",
+          "params": {
+            "kep_id": "4153"
+          },
+          "gold": [
+            "95",
+            "692",
+            "1929",
+            "2876",
+            "2887",
+            "2896",
+            "3488",
+            "3716",
+            "3962",
+            "4008",
+            "4358",
+            "5073",
+            "5468",
+            "5793",
+            "5975",
+            "6164"
+          ],
+          "query_layer": {
+            "answer": [
+              "1929",
+              "2876",
+              "2887",
+              "2896",
+              "3488",
+              "3716",
+              "3962",
+              "4008",
+              "4358",
+              "5073",
+              "5468",
+              "5793",
+              "5975",
+              "6164",
+              "692",
+              "95"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "692",
+              "1929",
+              "2876",
+              "2887",
+              "4008",
+              "5073",
+              "5468",
+              "5975"
+            ],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        }
+      ]
     },
-    {
-      "id": "q02",
-      "kind": "owning_sig",
-      "question": "Which SIG owns KEP-2299?",
-      "gold": "sig-cli",
-      "tool": "kep_detail",
-      "params": {
-        "kep_id": "2299"
+    "lookups": {
+      "title": "Lookups (baseline)",
+      "total": 33,
+      "query_layer_correct": 33,
+      "keyword_correct": 32,
+      "outcomes": {
+        "tie": 32,
+        "query_layer_only": 1,
+        "keyword_only": 0,
+        "both_wrong": 0
       },
-      "answer": "sig-cli",
-      "ok": true
-    },
-    {
-      "id": "q03",
-      "kind": "has_successor",
-      "question": "Does KEP-1040 have a successor?",
-      "gold": false,
-      "tool": "is_still_valid",
-      "params": {
-        "kep_id": "1040"
+      "by_kind": {
+        "approvers": {
+          "total": 5,
+          "query_layer_correct": 5,
+          "keyword_correct": 5,
+          "outcomes": {
+            "tie": 5,
+            "query_layer_only": 0,
+            "keyword_only": 0,
+            "both_wrong": 0
+          }
+        },
+        "has_successor": {
+          "total": 8,
+          "query_layer_correct": 8,
+          "keyword_correct": 8,
+          "outcomes": {
+            "tie": 8,
+            "query_layer_only": 0,
+            "keyword_only": 0,
+            "both_wrong": 0
+          }
+        },
+        "owning_sig": {
+          "total": 5,
+          "query_layer_correct": 5,
+          "keyword_correct": 5,
+          "outcomes": {
+            "tie": 5,
+            "query_layer_only": 0,
+            "keyword_only": 0,
+            "both_wrong": 0
+          }
+        },
+        "see_also_referrers": {
+          "total": 5,
+          "query_layer_correct": 5,
+          "keyword_correct": 4,
+          "outcomes": {
+            "tie": 4,
+            "query_layer_only": 1,
+            "keyword_only": 0,
+            "both_wrong": 0
+          }
+        },
+        "sig_kep_count": {
+          "total": 5,
+          "query_layer_correct": 5,
+          "keyword_correct": 5,
+          "outcomes": {
+            "tie": 5,
+            "query_layer_only": 0,
+            "keyword_only": 0,
+            "both_wrong": 0
+          }
+        },
+        "status": {
+          "total": 5,
+          "query_layer_correct": 5,
+          "keyword_correct": 5,
+          "outcomes": {
+            "tie": 5,
+            "query_layer_only": 0,
+            "keyword_only": 0,
+            "both_wrong": 0
+          }
+        }
       },
-      "answer": false,
-      "ok": true
-    },
-    {
-      "id": "q04",
-      "kind": "blast_radius_count",
-      "question": "What is the blast radius of KEP-1769?",
-      "gold": 21,
-      "tool": "blast_radius",
-      "params": {
-        "kep_id": "1769"
-      },
-      "answer": 21,
-      "ok": true
-    },
-    {
-      "id": "q05",
-      "kind": "has_successor",
-      "question": "Does KEP-2261 have a successor?",
-      "gold": false,
-      "tool": "is_still_valid",
-      "params": {
-        "kep_id": "2261"
-      },
-      "answer": false,
-      "ok": true
-    },
-    {
-      "id": "q06",
-      "kind": "sig_kep_count",
-      "question": "How many KEPs does sig-architecture own?",
-      "gold": 17,
-      "tool": "sig_overview",
-      "params": {
-        "sig": "sig-architecture"
-      },
-      "answer": 17,
-      "ok": true
-    },
-    {
-      "id": "q07",
-      "kind": "blast_radius_count",
-      "question": "What is the blast radius of KEP-5419?",
-      "gold": 25,
-      "tool": "blast_radius",
-      "params": {
-        "kep_id": "5419"
-      },
-      "answer": 25,
-      "ok": true
-    },
-    {
-      "id": "q08",
-      "kind": "see_also_referrers",
-      "question": "Which KEPs list KEP-2386 in see-also?",
-      "gold": [
-        "2384"
-      ],
-      "tool": "referrers",
-      "params": {
-        "kep_id": "2386"
-      },
-      "answer": [
-        "2384"
-      ],
-      "ok": true
-    },
-    {
-      "id": "q09",
-      "kind": "blast_radius_count",
-      "question": "What is the blast radius of KEP-3070?",
-      "gold": 2,
-      "tool": "blast_radius",
-      "params": {
-        "kep_id": "3070"
-      },
-      "answer": 2,
-      "ok": true
-    },
-    {
-      "id": "q10",
-      "kind": "sig_kep_count",
-      "question": "How many KEPs does sig-auth own?",
-      "gold": 36,
-      "tool": "sig_overview",
-      "params": {
-        "sig": "sig-auth"
-      },
-      "answer": 36,
-      "ok": true
-    },
-    {
-      "id": "q11",
-      "kind": "owning_sig",
-      "question": "Which SIG owns KEP-5681?",
-      "gold": "sig-auth",
-      "tool": "kep_detail",
-      "params": {
-        "kep_id": "5681"
-      },
-      "answer": "sig-auth",
-      "ok": true
-    },
-    {
-      "id": "q12",
-      "kind": "has_successor",
-      "question": "Does KEP-2340 have a successor?",
-      "gold": false,
-      "tool": "is_still_valid",
-      "params": {
-        "kep_id": "2340"
-      },
-      "answer": false,
-      "ok": true
-    },
-    {
-      "id": "q13",
-      "kind": "see_also_referrers",
-      "question": "Which KEPs list KEP-24 in see-also?",
-      "gold": [
-        "6061"
-      ],
-      "tool": "referrers",
-      "params": {
-        "kep_id": "24"
-      },
-      "answer": [
-        "6061"
-      ],
-      "ok": true
-    },
-    {
-      "id": "q14",
-      "kind": "has_successor",
-      "question": "Does KEP-583 have a successor?",
-      "gold": true,
-      "tool": "is_still_valid",
-      "params": {
-        "kep_id": "583"
-      },
-      "answer": true,
-      "ok": true
-    },
-    {
-      "id": "q15",
-      "kind": "has_successor",
-      "question": "Does KEP-2451 have a successor?",
-      "gold": true,
-      "tool": "is_still_valid",
-      "params": {
-        "kep_id": "2451"
-      },
-      "answer": true,
-      "ok": true
-    },
-    {
-      "id": "q16",
-      "kind": "approvers",
-      "question": "Who approved KEP-3503?",
-      "gold": [
-        "jsturtevant"
-      ],
-      "tool": "why",
-      "params": {
-        "kep_id": "3503"
-      },
-      "answer": [
-        "jsturtevant"
-      ],
-      "ok": true
-    },
-    {
-      "id": "q17",
-      "kind": "has_successor",
-      "question": "Does KEP-993 have a successor?",
-      "gold": true,
-      "tool": "is_still_valid",
-      "params": {
-        "kep_id": "993"
-      },
-      "answer": true,
-      "ok": true
-    },
-    {
-      "id": "q18",
-      "kind": "has_successor",
-      "question": "Does KEP-536 have a successor?",
-      "gold": true,
-      "tool": "is_still_valid",
-      "params": {
-        "kep_id": "536"
-      },
-      "answer": true,
-      "ok": true
-    },
-    {
-      "id": "q19",
-      "kind": "status",
-      "question": "What is the status of KEP-2249?",
-      "gold": "implementable",
-      "tool": "kep_detail",
-      "params": {
-        "kep_id": "2249"
-      },
-      "answer": "implementable",
-      "ok": true
-    },
-    {
-      "id": "q20",
-      "kind": "has_successor",
-      "question": "Does KEP-1513 have a successor?",
-      "gold": false,
-      "tool": "is_still_valid",
-      "params": {
-        "kep_id": "1513"
-      },
-      "answer": false,
-      "ok": true
-    },
-    {
-      "id": "q21",
-      "kind": "owning_sig",
-      "question": "Which SIG owns KEP-491?",
-      "gold": "sig-cli",
-      "tool": "kep_detail",
-      "params": {
-        "kep_id": "491"
-      },
-      "answer": "sig-cli",
-      "ok": true
-    },
-    {
-      "id": "q22",
-      "kind": "approvers",
-      "question": "Who approved KEP-2450?",
-      "gold": [
-        "thockin"
-      ],
-      "tool": "why",
-      "params": {
-        "kep_id": "2450"
-      },
-      "answer": [
-        "thockin"
-      ],
-      "ok": true
-    },
-    {
-      "id": "q23",
-      "kind": "sig_kep_count",
-      "question": "How many KEPs does sig-release own?",
-      "gold": 15,
-      "tool": "sig_overview",
-      "params": {
-        "sig": "sig-release"
-      },
-      "answer": 15,
-      "ok": true
-    },
-    {
-      "id": "q24",
-      "kind": "status",
-      "question": "What is the status of KEP-4381?",
-      "gold": "implemented",
-      "tool": "kep_detail",
-      "params": {
-        "kep_id": "4381"
-      },
-      "answer": "implemented",
-      "ok": true
-    },
-    {
-      "id": "q25",
-      "kind": "approvers",
-      "question": "Who approved KEP-6404?",
-      "gold": [
-        "deads2k",
-        "liggitt",
-        "wojtek-t"
-      ],
-      "tool": "why",
-      "params": {
-        "kep_id": "6404"
-      },
-      "answer": [
-        "deads2k",
-        "liggitt",
-        "wojtek-t"
-      ],
-      "ok": true
-    },
-    {
-      "id": "q26",
-      "kind": "see_also_referrers",
-      "question": "Which KEPs list KEP-1710 in see-also?",
-      "gold": [
-        "3756"
-      ],
-      "tool": "referrers",
-      "params": {
-        "kep_id": "1710"
-      },
-      "answer": [
-        "3756"
-      ],
-      "ok": true
-    },
-    {
-      "id": "q27",
-      "kind": "owning_sig",
-      "question": "Which SIG owns KEP-5027?",
-      "gold": "sig-scheduling",
-      "tool": "kep_detail",
-      "params": {
-        "kep_id": "5027"
-      },
-      "answer": "sig-scheduling",
-      "ok": true
-    },
-    {
-      "id": "q28",
-      "kind": "owning_sig",
-      "question": "Which SIG owns KEP-6060?",
-      "gold": "sig-auth",
-      "tool": "kep_detail",
-      "params": {
-        "kep_id": "6060"
-      },
-      "answer": "sig-auth",
-      "ok": true
-    },
-    {
-      "id": "q29",
-      "kind": "see_also_referrers",
-      "question": "Which KEPs list KEP-3973 in see-also?",
-      "gold": [
-        "5882"
-      ],
-      "tool": "referrers",
-      "params": {
-        "kep_id": "3973"
-      },
-      "answer": [
-        "5882"
-      ],
-      "ok": true
-    },
-    {
-      "id": "q30",
-      "kind": "status",
-      "question": "What is the status of KEP-5541?",
-      "gold": "implementable",
-      "tool": "kep_detail",
-      "params": {
-        "kep_id": "5541"
-      },
-      "answer": "implementable",
-      "ok": true
-    },
-    {
-      "id": "q31",
-      "kind": "blast_radius_count",
-      "question": "What is the blast radius of KEP-3063?",
-      "gold": 40,
-      "tool": "blast_radius",
-      "params": {
-        "kep_id": "3063"
-      },
-      "answer": 40,
-      "ok": true
-    },
-    {
-      "id": "q32",
-      "kind": "sig_kep_count",
-      "question": "How many KEPs does sig-network own?",
-      "gold": 62,
-      "tool": "sig_overview",
-      "params": {
-        "sig": "sig-network"
-      },
-      "answer": 62,
-      "ok": true
-    },
-    {
-      "id": "q33",
-      "kind": "see_also_referrers",
-      "question": "Which KEPs list KEP-5732 in see-also?",
-      "gold": [
-        "5547",
-        "5710",
-        "5729",
-        "6012",
-        "6089",
-        "6276"
-      ],
-      "tool": "referrers",
-      "params": {
-        "kep_id": "5732"
-      },
-      "answer": [
-        "5547",
-        "5710",
-        "5729",
-        "6012",
-        "6089",
-        "6276"
-      ],
-      "ok": true
-    },
-    {
-      "id": "q34",
-      "kind": "status",
-      "question": "What is the status of KEP-2025?",
-      "gold": "implementable",
-      "tool": "kep_detail",
-      "params": {
-        "kep_id": "2025"
-      },
-      "answer": "implementable",
-      "ok": true
-    },
-    {
-      "id": "q35",
-      "kind": "sig_kep_count",
-      "question": "How many KEPs does sig-instrumentation own?",
-      "gold": 20,
-      "tool": "sig_overview",
-      "params": {
-        "sig": "sig-instrumentation"
-      },
-      "answer": 20,
-      "ok": true
-    },
-    {
-      "id": "q36",
-      "kind": "status",
-      "question": "What is the status of KEP-4008?",
-      "gold": "implementable",
-      "tool": "kep_detail",
-      "params": {
-        "kep_id": "4008"
-      },
-      "answer": "implementable",
-      "ok": true
-    },
-    {
-      "id": "q37",
-      "kind": "approvers",
-      "question": "Who approved KEP-3299?",
-      "gold": [
-        "smarterclayton"
-      ],
-      "tool": "why",
-      "params": {
-        "kep_id": "3299"
-      },
-      "answer": [
-        "smarterclayton"
-      ],
-      "ok": true
-    },
-    {
-      "id": "q38",
-      "kind": "blast_radius_count",
-      "question": "What is the blast radius of KEP-1451?",
-      "gold": 8,
-      "tool": "blast_radius",
-      "params": {
-        "kep_id": "1451"
-      },
-      "answer": 8,
-      "ok": true
+      "questions": [
+        {
+          "id": "q01",
+          "kind": "owning_sig",
+          "question": "Which SIG owns KEP-2299?",
+          "params": {
+            "kep_id": "2299"
+          },
+          "gold": "sig-cli",
+          "query_layer": {
+            "answer": "sig-cli",
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": "sig-cli",
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q02",
+          "kind": "see_also_referrers",
+          "question": "Which KEPs list KEP-5593 in see-also?",
+          "params": {
+            "kep_id": "5593"
+          },
+          "gold": [
+            "4603"
+          ],
+          "query_layer": {
+            "answer": [
+              "4603"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "4603"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q03",
+          "kind": "status",
+          "question": "What is the status of KEP-2025?",
+          "params": {
+            "kep_id": "2025"
+          },
+          "gold": "implementable",
+          "query_layer": {
+            "answer": "implementable",
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": "implementable",
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q04",
+          "kind": "approvers",
+          "question": "Who approved KEP-1138?",
+          "params": {
+            "kep_id": "1138"
+          },
+          "gold": [
+            "lachie83",
+            "thockin"
+          ],
+          "query_layer": {
+            "answer": [
+              "lachie83",
+              "thockin"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "lachie83",
+              "thockin"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q05",
+          "kind": "status",
+          "question": "What is the status of KEP-4008?",
+          "params": {
+            "kep_id": "4008"
+          },
+          "gold": "implementable",
+          "query_layer": {
+            "answer": "implementable",
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": "implementable",
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q06",
+          "kind": "approvers",
+          "question": "Who approved KEP-993?",
+          "params": {
+            "kep_id": "993"
+          },
+          "gold": [
+            "monopole"
+          ],
+          "query_layer": {
+            "answer": [
+              "monopole"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "monopole"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q07",
+          "kind": "has_successor",
+          "question": "Does KEP-1040 have a successor?",
+          "params": {
+            "kep_id": "1040"
+          },
+          "gold": false,
+          "query_layer": {
+            "answer": false,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": false,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q08",
+          "kind": "see_also_referrers",
+          "question": "Which KEPs list KEP-24 in see-also?",
+          "params": {
+            "kep_id": "24"
+          },
+          "gold": [
+            "6061"
+          ],
+          "query_layer": {
+            "answer": [
+              "6061"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "6061"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q09",
+          "kind": "approvers",
+          "question": "Who approved KEP-3178?",
+          "params": {
+            "kep_id": "3178"
+          },
+          "gold": [
+            "thockin"
+          ],
+          "query_layer": {
+            "answer": [
+              "thockin"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "thockin"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q10",
+          "kind": "has_successor",
+          "question": "Does KEP-2261 have a successor?",
+          "params": {
+            "kep_id": "2261"
+          },
+          "gold": false,
+          "query_layer": {
+            "answer": false,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": false,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q11",
+          "kind": "has_successor",
+          "question": "Does KEP-2451 have a successor?",
+          "params": {
+            "kep_id": "2451"
+          },
+          "gold": true,
+          "query_layer": {
+            "answer": true,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": true,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q12",
+          "kind": "owning_sig",
+          "question": "Which SIG owns KEP-5681?",
+          "params": {
+            "kep_id": "5681"
+          },
+          "gold": "sig-auth",
+          "query_layer": {
+            "answer": "sig-auth",
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": "sig-auth",
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q13",
+          "kind": "approvers",
+          "question": "Who approved KEP-3751?",
+          "params": {
+            "kep_id": "3751"
+          },
+          "gold": [
+            "msau42",
+            "xing-yang"
+          ],
+          "query_layer": {
+            "answer": [
+              "msau42",
+              "xing-yang"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "msau42",
+              "xing-yang"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q14",
+          "kind": "sig_kep_count",
+          "question": "How many KEPs does sig-auth own?",
+          "params": {
+            "sig": "sig-auth"
+          },
+          "gold": 36,
+          "query_layer": {
+            "answer": 36,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": 36,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q15",
+          "kind": "has_successor",
+          "question": "Does KEP-2340 have a successor?",
+          "params": {
+            "kep_id": "2340"
+          },
+          "gold": false,
+          "query_layer": {
+            "answer": false,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": false,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q16",
+          "kind": "sig_kep_count",
+          "question": "How many KEPs does sig-release own?",
+          "params": {
+            "sig": "sig-release"
+          },
+          "gold": 15,
+          "query_layer": {
+            "answer": 15,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": 15,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q17",
+          "kind": "see_also_referrers",
+          "question": "Which KEPs list KEP-1682 in see-also?",
+          "params": {
+            "kep_id": "1682"
+          },
+          "gold": [
+            "695",
+            "2317"
+          ],
+          "query_layer": {
+            "answer": [
+              "2317",
+              "695"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [],
+            "error": null,
+            "ok": false
+          },
+          "outcome": "query_layer_only"
+        },
+        {
+          "id": "q18",
+          "kind": "status",
+          "question": "What is the status of KEP-5541?",
+          "params": {
+            "kep_id": "5541"
+          },
+          "gold": "implementable",
+          "query_layer": {
+            "answer": "implementable",
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": "implementable",
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q19",
+          "kind": "has_successor",
+          "question": "Does KEP-993 have a successor?",
+          "params": {
+            "kep_id": "993"
+          },
+          "gold": true,
+          "query_layer": {
+            "answer": true,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": true,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q20",
+          "kind": "status",
+          "question": "What is the status of KEP-4381?",
+          "params": {
+            "kep_id": "4381"
+          },
+          "gold": "implemented",
+          "query_layer": {
+            "answer": "implemented",
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": "implemented",
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q21",
+          "kind": "sig_kep_count",
+          "question": "How many KEPs does sig-instrumentation own?",
+          "params": {
+            "sig": "sig-instrumentation"
+          },
+          "gold": 20,
+          "query_layer": {
+            "answer": 20,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": 20,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q22",
+          "kind": "owning_sig",
+          "question": "Which SIG owns KEP-6060?",
+          "params": {
+            "kep_id": "6060"
+          },
+          "gold": "sig-auth",
+          "query_layer": {
+            "answer": "sig-auth",
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": "sig-auth",
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q23",
+          "kind": "has_successor",
+          "question": "Does KEP-1513 have a successor?",
+          "params": {
+            "kep_id": "1513"
+          },
+          "gold": false,
+          "query_layer": {
+            "answer": false,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": false,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q24",
+          "kind": "owning_sig",
+          "question": "Which SIG owns KEP-491?",
+          "params": {
+            "kep_id": "491"
+          },
+          "gold": "sig-cli",
+          "query_layer": {
+            "answer": "sig-cli",
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": "sig-cli",
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q25",
+          "kind": "has_successor",
+          "question": "Does KEP-583 have a successor?",
+          "params": {
+            "kep_id": "583"
+          },
+          "gold": true,
+          "query_layer": {
+            "answer": true,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": true,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q26",
+          "kind": "has_successor",
+          "question": "Does KEP-536 have a successor?",
+          "params": {
+            "kep_id": "536"
+          },
+          "gold": true,
+          "query_layer": {
+            "answer": true,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": true,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q27",
+          "kind": "sig_kep_count",
+          "question": "How many KEPs does sig-network own?",
+          "params": {
+            "sig": "sig-network"
+          },
+          "gold": 62,
+          "query_layer": {
+            "answer": 62,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": 62,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q28",
+          "kind": "owning_sig",
+          "question": "Which SIG owns KEP-5027?",
+          "params": {
+            "kep_id": "5027"
+          },
+          "gold": "sig-scheduling",
+          "query_layer": {
+            "answer": "sig-scheduling",
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": "sig-scheduling",
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q29",
+          "kind": "sig_kep_count",
+          "question": "How many KEPs does sig-architecture own?",
+          "params": {
+            "sig": "sig-architecture"
+          },
+          "gold": 17,
+          "query_layer": {
+            "answer": 17,
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": 17,
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q30",
+          "kind": "status",
+          "question": "What is the status of KEP-2249?",
+          "params": {
+            "kep_id": "2249"
+          },
+          "gold": "implementable",
+          "query_layer": {
+            "answer": "implementable",
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": "implementable",
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q31",
+          "kind": "see_also_referrers",
+          "question": "Which KEPs list KEP-2385 in see-also?",
+          "params": {
+            "kep_id": "2385"
+          },
+          "gold": [
+            "2382",
+            "2953"
+          ],
+          "query_layer": {
+            "answer": [
+              "2382",
+              "2953"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "2382",
+              "2953"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q32",
+          "kind": "approvers",
+          "question": "Who approved KEP-1029?",
+          "params": {
+            "kep_id": "1029"
+          },
+          "gold": [
+            "dchen1107",
+            "derekwaynecarr"
+          ],
+          "query_layer": {
+            "answer": [
+              "dchen1107",
+              "derekwaynecarr"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "dchen1107",
+              "derekwaynecarr"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        },
+        {
+          "id": "q33",
+          "kind": "see_also_referrers",
+          "question": "Which KEPs list KEP-3866 in see-also?",
+          "params": {
+            "kep_id": "3866"
+          },
+          "gold": [
+            "5343",
+            "5495"
+          ],
+          "query_layer": {
+            "answer": [
+              "5343",
+              "5495"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "keyword_search": {
+            "answer": [
+              "5343",
+              "5495"
+            ],
+            "error": null,
+            "ok": true
+          },
+          "outcome": "tie"
+        }
+      ]
     }
-  ]
+  }
 }

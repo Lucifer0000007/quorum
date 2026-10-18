@@ -31,7 +31,7 @@ validated parameters and (2) format a staged notice. Verdicts never come from th
 - Two **subagents** did independent work. They were general-purpose agents told to follow
   `.claude/agents/eval-agent.md` and `.claude/agents/cypher-reviewer.md`, because Claude Code only loads
   project-defined agents at session start (the definitions are in the repo and will work from the next session).
-  - The eval agent wrote `evals/make_gold.py`, an independent YAML-only gold generator, and its tests.
+  - The eval agent wrote the independent YAML-only gold generators (now `evals/lookups/` and `evals/multihop/`, sharing `evals/yamlcorpus.py`), the raw-text keyword baseline `evals/baseline.py`, and their tests.
   - The reviewer audited the templates against the live graph. It recomputed the blast radius for every KEP with
     a unique number using its own BFS (exact match) and reported 7 issues, all fixed:
     - duplicate stale-ancestor and successor rows

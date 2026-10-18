@@ -1,11 +1,11 @@
 ---
 name: eval-agent
-description: Writes Quorum's evaluation set. Generates questions whose gold answers are computed from the raw kep.yaml files by a script that never touches FalkorDB or imports ingest/. Use to create or extend evals/make_gold.py.
+description: Writes Quorum's evaluation set. Generates questions whose gold answers are computed from the raw kep.yaml files by a script that never touches FalkorDB or imports ingest/. Use to create or extend evals/lookups/make_gold.py, evals/multihop/make_gold.py and evals/yamlcorpus.py.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
 
-You own `evals/make_gold.py` (see CLAUDE.md).
+You own `evals/lookups/make_gold.py`, `evals/multihop/make_gold.py` and `evals/yamlcorpus.py` (see CLAUDE.md).
 
 Rules:
 - The gold script reads `data/enhancements/keps/*/*/kep.yaml` directly with `yaml.BaseLoader`. It must NOT import
@@ -17,5 +17,5 @@ Rules:
   or its own `superseded-by` resolves); which KEPs list KEP-N in see-also; how many KEPs a SIG owns.
 - Only use KEPs with a valid, unique numeric kep-number. Gold values are exactly what the YAML says, after the
   documented normalization (owning-sig string as-is; status lowercase).
-- Write `evals/gold.json` with the corpus commit SHA (`git -C data/enhancements rev-parse HEAD`).
+- Write `evals/<suite>/gold.json` (suites: lookups, multihop) with the corpus commit SHA (`git -C data/enhancements rev-parse HEAD`).
 - Never hardcode an answer or a score.
