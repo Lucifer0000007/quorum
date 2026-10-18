@@ -108,7 +108,7 @@ def main():
         "simulation": simulate(keps, rows, meta["max_minor"]),
     }
     DATA_DIR.mkdir(exist_ok=True)
-    (DATA_DIR / "report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    (DATA_DIR / "report.json").write_text(json.dumps(report, indent=2), encoding="utf-8", newline="\n")
     print(json.dumps({k: v for k, v in report.items() if k not in ("stale_keps", "sigs")}, indent=2))
     print(f"\nWrote {DATA_DIR / 'report.json'}")
 

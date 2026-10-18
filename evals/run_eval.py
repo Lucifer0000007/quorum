@@ -64,7 +64,7 @@ def main() -> dict:
         k = results["by_kind"].setdefault(r["kind"], {"passed": 0, "total": 0})
         k["total"] += 1
         k["passed"] += r["ok"]
-    (HERE / "results.json").write_text(json.dumps(results, indent=2, default=str), encoding="utf-8")
+    (HERE / "results.json").write_text(json.dumps(results, indent=2, default=str), encoding="utf-8", newline="\n")
     print(f"Eval: {passed}/{len(rows)} passed ({results['rate']:.1%}) in {results['seconds']}s")
     for kind, k in results["by_kind"].items():
         print(f"  {kind:20s} {k['passed']}/{k['total']}")

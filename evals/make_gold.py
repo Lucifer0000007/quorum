@@ -376,7 +376,7 @@ def main() -> None:
     if not (DEFAULT_ENHANCEMENTS / "keps").is_dir():
         sys.exit(f"error: corpus not found at {DEFAULT_ENHANCEMENTS} (run `make clone-data`)")
     gold = build_gold(DEFAULT_ENHANCEMENTS)
-    DEFAULT_OUT.write_text(json.dumps(gold, indent=2) + "\n", encoding="utf-8")
+    DEFAULT_OUT.write_text(json.dumps(gold, indent=2) + "\n", encoding="utf-8", newline="\n")
     kinds = Counter(q["kind"] for q in gold["questions"])
     print(f"wrote {DEFAULT_OUT} ({len(gold['questions'])} questions, commit {gold['source_commit'][:12]})")
     for kind, n in sorted(kinds.items()):

@@ -80,7 +80,7 @@ def main():
         if start not in text:
             raise SystemExit(f"README is missing the {start} marker")
         text = re.sub(re.escape(start) + r".*?" + re.escape(end), lambda _, b=block: b, text, flags=re.DOTALL)
-    readme.write_text(text, encoding="utf-8")
+    readme.write_text(text, encoding="utf-8", newline="\n")
     print(f"README regenerated: {len(TEMPLATES)} templates + stats")
 
 
