@@ -64,6 +64,13 @@ def resolve_kep(kep_id: str) -> tuple[str, dict]:
     return run["rows"][0]["id"], _q(run)
 
 
+def require_sig(sig: str) -> dict:
+    run = run_ro("sig_exists", {"sig": sig})
+    if not run["rows"]:
+        raise NotFound(f"No SIG named '{sig}' in the graph.")
+    return _q(run)
+
+
 def _result(tool: str, result, runs: list[dict], source_links: list[dict], path: list | None = None) -> dict:
     return {
         "tool": tool,
@@ -102,7 +109,8 @@ def kep_detail(kep_id: str) -> dict:
 
 def blast_radius(kep_id: str) -> dict:
     kid, rq = resolve_kep(kep_id)
-    detail = run_ro("kep_detail", {"kep_id": kid})["rows"][0]["kep"]
+    drun = run_ro("kep_detail", {"kep_id": kid})
+    detail = drun["rows"][0]["kep"]
     run = run_ro("blast_radius", {"kep_id": kid})
     affected = []
     for r in run["rows"]:
@@ -112,18 +120,19 @@ def blast_radius(kep_id: str) -> dict:
         "hops": 3,
         "reachable": affected,
         "reachable_count": len(affected),
-        "truncated": len(affected) >= 100,
+        "at_limit": len(affected) >= 100,  # True means the LIMIT 100 cap was reached; results may be cut off
         "no_path_found": not affected,
         "message": None if affected else f"No path found: KEP-{kid} has no REPLACES/SEE_ALSO link within 3 hops.",
     }
     links = kep_links(detail) + [{"label": f"KEP-{a['id']}", "url": a["source_url"]} for a in affected[:20]]
     path = [e for a in affected for e in a["path_edges"]]
-    return _result("blast_radius", result, [rq, _q(run)], links, path)
+    return _result("blast_radius", result, [rq, _q(drun), _q(run)], links, path)
 
 
 def is_still_valid(kep_id: str) -> dict:
     kid, rq = resolve_kep(kep_id)
-    detail = run_ro("kep_detail", {"kep_id": kid})["rows"][0]["kep"]
+    drun = run_ro("kep_detail", {"kep_id": kid})
+    detail = drun["rows"][0]["kep"]
     run = run_ro("is_still_valid", {"kep_id": kid, "stale_statuses": list(STALE)})
     row = run["rows"][0]
     succ = [{"id": i, "title": t, "status": s, "hops": h} for i, t, s, h in _clean(row["successors"])]
@@ -145,7 +154,7 @@ def is_still_valid(kep_id: str) -> dict:
                                                                          if p["hops"] == 1]
     for s in stale:
         path += [[a, "SEE_ALSO", b] for a, b in zip(s["path"], s["path"][1:], strict=False)]
-    return _result("is_still_valid", result, [rq, _q(run)], kep_links(detail), path)
+    return _result("is_still_valid", result, [rq, _q(drun), _q(run)], kep_links(detail), path)
 
 
 def who_knows(sig: str | None = None, kep_id: str | None = None, limit: int = 10) -> dict:
@@ -158,10 +167,13 @@ def who_knows(sig: str | None = None, kep_id: str | None = None, limit: int = 10
         runs.append(rq)
         run = run_ro("who_knows_kep", {"kep_id": kid, "recent_min_minor": threshold, "limit": limit})
         scope = f"KEP-{kid} and its 2-hop REPLACES/SEE_ALSO neighborhood"
-        links = kep_links(run_ro("kep_detail", {"kep_id": kid})["rows"][0]["kep"])
+        drun = run_ro("kep_detail", {"kep_id": kid})
+        runs.append(_q(drun))
+        links = kep_links(drun["rows"][0]["kep"])
     else:
         sig = sig.strip().lower()
         sig = sig if sig.startswith(("sig-", "wg-", "committee-")) else f"sig-{sig}"
+        runs.append(require_sig(sig))
         run = run_ro("who_knows_sig", {"sig": sig, "recent_min_minor": threshold, "limit": limit})
         scope = f"KEPs owned by or involving {sig}"
         links = [{"label": f"{sig} KEPs", "url": f"https://github.com/kubernetes/enhancements/tree/master/keps/{sig}"}]
@@ -214,10 +226,11 @@ def referrers(kep_id: str) -> dict:
 def sig_overview(sig: str) -> dict:
     sig = sig.strip().lower()
     sig = sig if sig.startswith(("sig-", "wg-", "committee-")) else f"sig-{sig}"
+    exists = require_sig(sig)
     run = run_ro("sig_overview", {"sig": sig, "active_statuses": list(ACTIVE)})
     row = run["rows"][0] if run["rows"] else {"sig": sig, "owned": 0, "statuses": [], "active": 0}
     links = [{"label": f"{sig} KEPs", "url": f"https://github.com/kubernetes/enhancements/tree/master/keps/{sig}"}]
-    return _result("sig_overview", row, [_q(run)], links, [])
+    return _result("sig_overview", row, [exists, _q(run)], links, [])
 
 
 def search_keps(q: str, limit: int = 20) -> dict:

@@ -73,13 +73,18 @@ LIMIT 100""",
         "cypher": """
 MATCH (k:KEP {id: $kep_id})
 OPTIONAL MATCH sp = (k)<-[:REPLACES*1..5]-(s:KEP)
-WITH k, collect(DISTINCT [s.id, s.title, s.status, length(sp)]) AS successors
+WITH k, s, min(length(sp)) AS sh
+WITH k, collect(DISTINCT [s.id, s.title, s.status, sh]) AS successors
 OPTIONAL MATCH pp = (k)-[:REPLACES*1..5]->(pr:KEP)
-WITH k, successors, collect(DISTINCT [pr.id, pr.title, pr.status, length(pp)]) AS predecessors
+WITH k, successors, pr, min(length(pp)) AS ph
+WITH k, successors, collect(DISTINCT [pr.id, pr.title, pr.status, ph]) AS predecessors
 OPTIONAL MATCH ap = (k)-[:SEE_ALSO*1..3]->(a:KEP)
 WHERE a.status IN $stale_statuses
+WITH k, successors, predecessors, a, ap ORDER BY length(ap)
+WITH k, successors, predecessors, a, collect(ap)[0] AS best
 RETURN k.id AS id, k.title AS title, k.status AS status, k.status_raw AS status_raw, successors, predecessors,
-       collect(DISTINCT [a.id, a.title, a.status, [n IN nodes(ap) | n.id]]) AS stale_ancestors
+       collect(DISTINCT [a.id, a.title, a.status,
+                         CASE WHEN best IS NULL THEN [] ELSE [n IN nodes(best) | n.id] END]) AS stale_ancestors
 LIMIT 1""",
     },
     "who_knows_sig": {
@@ -91,8 +96,8 @@ WITH DISTINCT k
 MATCH (p:Person)-[r:AUTHORED|REVIEWED|APPROVED]->(k)
 WITH p, k, type(r) AS role,
      CASE WHEN k.latest_minor IS NOT NULL AND k.latest_minor >= $recent_min_minor THEN 2 ELSE 1 END AS w
-RETURN p.handle AS handle, sum(w) AS score, count(DISTINCT k) AS keps,
-       sum(CASE WHEN w = 2 THEN 1 ELSE 0 END) AS recent_contributions,
+RETURN p.handle AS handle, toInteger(sum(w)) AS score, count(DISTINCT k) AS keps,
+       toInteger(sum(CASE WHEN w = 2 THEN 1 ELSE 0 END)) AS recent_contributions,
        collect(DISTINCT role) AS roles, collect(DISTINCT k.id)[0..5] AS sample_keps
 ORDER BY score DESC, handle
 LIMIT $limit""",
@@ -109,8 +114,8 @@ WITH DISTINCT h
 MATCH (p:Person)-[r:AUTHORED|REVIEWED|APPROVED]->(h)
 WITH p, h, type(r) AS role,
      CASE WHEN h.latest_minor IS NOT NULL AND h.latest_minor >= $recent_min_minor THEN 2 ELSE 1 END AS w
-RETURN p.handle AS handle, sum(w) AS score, count(DISTINCT h) AS keps,
-       sum(CASE WHEN w = 2 THEN 1 ELSE 0 END) AS recent_contributions,
+RETURN p.handle AS handle, toInteger(sum(w)) AS score, count(DISTINCT h) AS keps,
+       toInteger(sum(CASE WHEN w = 2 THEN 1 ELSE 0 END)) AS recent_contributions,
        collect(DISTINCT role) AS roles, collect(DISTINCT h.id)[0..5] AS sample_keps
 ORDER BY score DESC, handle
 LIMIT $limit""",
@@ -159,7 +164,15 @@ LIMIT 100""",
         "cypher": """
 MATCH (s:SIG {name: $sig})<-[:OWNED_BY]-(k:KEP)
 RETURN s.name AS sig, count(k) AS owned, collect(DISTINCT k.status) AS statuses,
-       sum(CASE WHEN k.status IN $active_statuses THEN 1 ELSE 0 END) AS active
+       toInteger(sum(CASE WHEN k.status IN $active_statuses THEN 1 ELSE 0 END)) AS active
+LIMIT 1""",
+    },
+    "sig_exists": {
+        "graph": BRAIN,
+        "doc": "Check that a SIG node exists (unknown SIGs fail loudly instead of returning zero).",
+        "cypher": """
+MATCH (s:SIG {name: $sig})
+RETURN s.name AS name
 LIMIT 1""",
     },
     "list_sigs": {

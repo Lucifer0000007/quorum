@@ -43,3 +43,13 @@ def test_ambiguous_and_missing_ids_fail_loudly():
         q.resolve_kep("2133")
     with pytest.raises(q.NotFound):
         q.resolve_kep("999999")
+
+
+def test_stale_ancestors_deduplicated_2433():
+    stale = q.is_still_valid("2433")["result"]["stale_ancestors"]
+    assert [s["id"] for s in stale] == ["536"]
+
+
+def test_unknown_sig_fails_loudly():
+    with pytest.raises(q.NotFound):
+        q.sig_overview("sig-does-not-exist")

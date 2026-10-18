@@ -33,7 +33,8 @@ def test_decide_no_approvers_is_at_risk():
     "kep_id,verdict,rules",
     [
         ("1020", "CLEAN", ["CLEAN"]),            # no REPLACES/SEE_ALSO links at all
-        ("3327", "AT_RISK", ["R2"]),             # 9 active neighbours, all sig-node
+        ("624", "AT_RISK", ["R2"]),              # active neighbours, all sig-scheduling
+        ("3327", "AT_RISK", ["R2", "R4"]),       # only approver is the group alias @sig-node-tech-leads
         ("1451", "AT_RISK", ["R2", "R4"]),       # approvers not on any KEP with a recent milestone
         ("5468", "AT_RISK", ["R2", "R3"]),       # see-also -> KEP-4153, status replaced
         ("1287", "HUMAN_GATE_REQUIRED", ["R1"]),  # in-place pod resize touches 7 SIGs

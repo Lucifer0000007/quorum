@@ -71,18 +71,27 @@ def normalize_status(raw) -> str:
     return "unknown"
 
 
+_GROUP_ALIAS = re.compile(r"^(sig|wg|committee)-|-(leads|tech-leads|approvers|reviewers|maintainers)$")
+
+
+def is_group_alias(handle: str) -> bool:
+    """GitHub team aliases like @sig-node-tech-leads are groups, not people; they are skipped and counted."""
+    return bool(_GROUP_ALIAS.search(handle))
+
+
 def normalize_handle(raw) -> str | None:
-    """'@Foo' -> 'foo'; 'Jane Doe (@jdoe)' -> 'jdoe'; TBD/empty -> None."""
+    """'@Foo' -> 'foo'; 'Jane Doe (@jdoe)' -> 'jdoe'; TBD/empty/group alias -> None."""
     if is_nullish(raw):
         return None
     s = str(raw).strip()
     m = _HANDLE_AT.search(s)
-    if m:
-        return m.group(1).lower()
+    handle = m.group(1).lower() if m else None
     bare = s.strip("\"' ")
-    if _BARE_HANDLE.fullmatch(bare):
-        return bare.lower()
-    return None
+    if handle is None and _BARE_HANDLE.fullmatch(bare):
+        handle = bare.lower()
+    if handle and is_group_alias(handle):
+        return None
+    return handle
 
 
 def normalize_sig(raw) -> str | None:

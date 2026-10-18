@@ -1,5 +1,5 @@
 {
-  "data_hash": "b05225757231c20173ad98c1b5e031287ee3d52cab57633c61526b970235ac57",
+  "data_hash": "32731b67d488d88eab9806365fa0dc0ea80ae23869e75cee0445f8492dd6a54c",
   "keps": 648,
   "verdicts": {
     "CLEAN": 339,
@@ -10,8 +10,8 @@
     "CLEAN": 339,
     "R2": 147,
     "R1": 122,
-    "R4": 57,
+    "R4": 63,
     "R3": 32
   },
-  "seconds": 17.3
+  "seconds": 17.6
 }

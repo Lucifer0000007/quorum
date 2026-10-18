@@ -90,7 +90,8 @@ def test_data_hash_is_deterministic():
 
 @pytest.mark.parametrize(
     "raw,expected",
-    [("@Dims", "dims"), ("TBD", None), ("", None), ("Jane Doe (@jdoe)", "jdoe"), ("n/a", None), ("thockin", "thockin")],
+    [("@Dims", "dims"), ("TBD", None), ("", None), ("Jane Doe (@jdoe)", "jdoe"), ("n/a", None), ("thockin", "thockin"),
+     ("@sig-node-tech-leads", None), ("@sig-testing", None)],
 )
 def test_normalize_handle(raw, expected):
     assert normalize_handle(raw) == expected
